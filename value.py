@@ -1,6 +1,10 @@
 import math
 
 """
+/////////////
+/// VALUE ///
+/////////////
+
 Neural network library for automatic differentiation and gradient computation.
 Based on amazing work by karpathy (https://github.com/karpathy/micrograd).
 """

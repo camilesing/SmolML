@@ -4,7 +4,7 @@ import math
 
 """
 ///////////////
-/// MLArray ///
+/// MLARRAY ///
 ///////////////
 """
 
@@ -33,7 +33,7 @@ class MLArray:
             return Value(data)
         elif isinstance(data, list):
             return [self._process_data(item) for item in data]
-        elif isinstance(data, Value):
+        elif isinstance(data, (Value, MLArray)):
             return data
         else:
             raise TypeError(f"Unsupported data type: {type(data)}")
@@ -294,6 +294,9 @@ class MLArray:
 
     def abs(self):
         return self._element_wise_function(lambda val: abs(val))
+
+    def __len__(self):
+        return len(self.data)
 
     """
     /////////////////////////
@@ -593,6 +596,57 @@ class MLArray:
         formatted_data = format_array(self.data)
         return f"MLArray(shape={self.shape},\ndata={formatted_data})"
 
+    """
+    ///////////////////////
+    /// Suscriptability ///
+    ///////////////////////
+    """
+
+    def __getitem__(self, index):
+        """
+        Enables array indexing with [] operator.
+        Supports integer indexing and tuples for multiple dimensions.
+        
+        Examples:
+            arr[0]     # get first element
+            arr[1, 2]  # get element at row 1, column 2
+        """
+        if not isinstance(index, tuple):
+            index = (index,)
+            
+        def get_item_recursive(data, index):
+            if len(index) == 1:
+                return data[index[0]]
+            
+            curr_index = index[0]
+            return get_item_recursive(data[curr_index], index[1:])
+            
+        return MLArray(get_item_recursive(self.data, index))
+            
+
+    def __setitem__(self, index, value):
+        """
+        Enables array assignment with [] operator.
+        Supports integer indexing and tuples for multiple dimensions.
+        Examples:
+            arr[0] = 1      # set first element
+            arr[1, 2] = 3   # set element at row 1, column 2
+        """
+        if not isinstance(index, tuple):
+            index = (index,)
+        
+        # Convert value to MLArray if it isn't already
+        if not isinstance(value, MLArray):
+            value = MLArray(value)
+            
+        def set_item_recursive(data, index, value):
+            if len(index) == 1:
+                data[index[0]] = value.data
+            else:
+                curr_index = index[0]
+                set_item_recursive(data[curr_index], index[1:], value)
+                
+        set_item_recursive(self.data, index, value)
 
     """
     ////////////////////

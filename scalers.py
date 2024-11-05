@@ -3,6 +3,12 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler as SKStandardScaler
 from value import Value
 
+"""
+///////////////
+/// SCALERS ///
+///////////////
+"""
+
 class StandardScaler:
     """
     Standardizes features by removing the mean and scaling to unit variance.

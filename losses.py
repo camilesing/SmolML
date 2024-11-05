@@ -1,6 +1,10 @@
 from ml_array import MLArray
 
 """
+//////////////////////
+/// LOSS FUNCTIONS ///
+//////////////////////
+
 Loss functions for training machine learning models.
 Each function computes error between predictions and true values.
 """

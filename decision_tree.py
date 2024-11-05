@@ -3,6 +3,12 @@ import random
 from collections import Counter
 import math
 
+"""
+/////////////////////
+/// DECISION TREE ///
+/////////////////////
+"""
+
 class DecisionNode:
     """
     Node in decision tree that handles splitting logic.
@@ -212,81 +218,3 @@ class DecisionTree:
         if x[node.feature_idx] <= node.threshold:
             return self._traverse_tree(x, node.left)
         return self._traverse_tree(x, node.right)
-
-def decision_tree_example():
-    """
-    Example of using DecisionTree for both classification and regression.
-    """
-    # Classification example - Simple XOR-like problem
-    print("=== Classification Example ===")
-    
-    # Create synthetic classification data
-    X_cls = MLArray([
-        [0, 0],  # Class 0
-        [0, 1],  # Class 1
-        [1, 0],  # Class 1
-        [1, 1],  # Class 0
-        [0.1, 0.1],  # Class 0
-        [0.9, 0.9],  # Class 0
-        [0.1, 0.9],  # Class 1
-        [0.9, 0.1],  # Class 1
-    ])
-    
-    y_cls = MLArray([0, 1, 1, 0, 0, 0, 1, 1])
-    
-    # Create and train classification tree
-    clf_tree = DecisionTree(
-        max_depth=3,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        task="classification"
-    )
-    
-    print("Training classification tree...")
-    clf_tree.fit(X_cls, y_cls)
-    
-    # Make predictions
-    y_pred = clf_tree.predict(X_cls)
-    print("\nClassification Predictions:")
-    print("True labels:", y_cls.to_list())
-    print("Predictions:", y_pred.to_list())
-    
-    # Calculate accuracy
-    accuracy = sum(1 for true, pred in zip(y_cls.data, y_pred.data) if true == pred) / len(y_cls.data)
-    print(f"Accuracy: {accuracy:.2f}")
-    
-    # Regression example - Simple quadratic relationship
-    print("\n=== Regression Example ===")
-    
-    # Create synthetic regression data
-    X_reg = MLArray([[x/10] for x in range(-10, 11)])  # Values from -1 to 1
-    y_reg = MLArray([x[0]**2 for x in X_reg.data])  # Quadratic relationship: y = x²
-    
-    # Add some noise
-    y_reg = y_reg + MLArray([random.uniform(-0.1, 0.1) for _ in range(len(y_reg.data))])
-    
-    # Create and train regression tree
-    reg_tree = DecisionTree(
-        max_depth=10,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        task="regression"
-    )
-    
-    print("Training regression tree...")
-    reg_tree.fit(X_reg, y_reg)
-    
-    # Make predictions
-    y_pred = reg_tree.predict(X_reg)
-    
-    # Calculate MSE
-    mse = sum((pred - true)**2 for pred, true in zip(y_pred.data, y_reg.data)) / len(y_reg.data)
-    print(f"\nMean Squared Error: {mse}")
-    
-    print("\nSample regression predictions:")
-    for x, y_true, y_p in zip(X_reg.data[:5], y_reg.data[:5], y_pred.data[:5]):
-        print(f"x={x[0]}, True={y_true}, Predicted={y_p}")
-
-# Run example
-if __name__ == "__main__":
-    decision_tree_example()

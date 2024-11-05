@@ -8,6 +8,12 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 import numpy as np
 
+"""
+//////////////////
+/// REGRESSION ///
+//////////////////
+"""
+
 class LinearRegression:
    """
    Implements linear regression using gradient descent optimization.

@@ -4,6 +4,12 @@ import random
 from functools import reduce
 from operator import mul
 
+"""
+////////////////////
+/// INITIALIZERS ///
+////////////////////
+"""
+
 class WeightInitializer:
    """
    Base class for neural network weight initialization strategies.

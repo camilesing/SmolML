@@ -2,6 +2,10 @@ from ml_array import MLArray
 import math
 
 """
+////////////////////////////
+/// ACTIVATION FUNCTIONS ///
+////////////////////////////
+
 Activation functions for neural network layers.
 Each function applies non-linear transformations element-wise.
 """
