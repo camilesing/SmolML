@@ -2,6 +2,7 @@ from ml_array import MLArray, zeros
 import losses
 import activation
 import initializers
+import optimizers
 
 """
 //////////////////////
@@ -31,24 +32,23 @@ class DenseLayer:
         z = input_data @ self.weights + self.biases  # Linear transformation
         return self.activation_function(z)  # Apply activation function
 
-    def update(self, learning_rate):
-        """
-        Updates weights and biases using gradient descent with the specified learning rate.
-        """
-        self.weights = self.weights - learning_rate * self.weights.grad()  # Update weights
-        self.biases = self.biases - learning_rate * self.biases.grad()    # Update biases
+    def update(self, optimizer):
+        """Update parameters using the provided optimizer"""
+        self.weights = optimizer.update(self.weights, self.weights.grad())
+        self.biases = optimizer.update(self.biases, self.biases.grad())
 
 class NeuralNetwork:
     """
     Implementation of a feedforward neural network with customizable layers and loss function.
     Supports training through backpropagation and gradient descent.
     """
-    def __init__(self, layers: list, loss_function: callable) -> None:
+    def __init__(self, layers: list, loss_function: callable, optimizer: optimizers.Optimizer = optimizers.SGD()) -> None:
         """
         Initializes the network with a list of layers and a loss function for training.
         """
         self.layers = layers
         self.loss_function = loss_function
+        self.optimizer = optimizer if optimizer is not None else optimizers.SGD()
 
     def forward(self, input_data):
         """
@@ -58,7 +58,7 @@ class NeuralNetwork:
             input_data = layer.forward(input_data)
         return input_data
 
-    def train(self, X, y, epochs, learning_rate, print_every=None):
+    def train(self, X, y, epochs, print_every=None):
         """
         Trains the network using gradient descent for the specified number of epochs.
         Prints loss every 100 epochs to monitor training progress.
@@ -75,7 +75,7 @@ class NeuralNetwork:
             
             # Update parameters in each layer
             for layer in self.layers:
-                layer.update(learning_rate)
+                layer.update(self.optimizer)
             
             # Reset gradients for next iteration
             X = X.restart()
@@ -101,14 +101,14 @@ def example_neural_network():
     nn = NeuralNetwork([
         DenseLayer(input_size, hidden_size, activation.relu),
         DenseLayer(hidden_size, output_size, activation.tanh)
-    ], losses.mse_loss)
+    ], losses.mse_loss, optimizers.SGD(learning_rate=1))
 
     # Generate some dummy data
     X = MLArray([[0, 0], [0, 1], [1, 0], [1, 1]])
     y = MLArray([[0], [1], [1], [0]])
 
     # Train the network
-    nn.train(X, y, epochs=1000, learning_rate=0.1)
+    nn.train(X, y, epochs=1000)
 
     y_pred = nn.forward(X)
     print(y_pred)

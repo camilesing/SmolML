@@ -13,6 +13,7 @@ from ml_array import MLArray
 from neural_network import NeuralNetwork, DenseLayer
 import activation
 import losses
+import optimizers
 
 class TestNeuralNetworkVsTensorflow(unittest.TestCase):
     """
@@ -62,7 +63,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
         return NeuralNetwork([
             DenseLayer(self.input_size, self.hidden_size, activation.relu),
             DenseLayer(self.hidden_size, self.output_size, activation.sigmoid)
-        ], losses.binary_cross_entropy)
+        ], losses.binary_cross_entropy, optimizer=optimizers.SGD(learning_rate=1))
 
     def _create_tf_model(self):
         """
@@ -109,7 +110,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
             loss.backward()
             
             for layer in self.custom_model.layers:
-                layer.update(self.learning_rate)
+                layer.update(self.custom_model.optimizer)
             
             # Reset computational graph
             self.X_train_ml = self.X_train_ml.restart()
