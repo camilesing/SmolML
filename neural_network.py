@@ -32,10 +32,9 @@ class DenseLayer:
         z = input_data @ self.weights + self.biases  # Linear transformation
         return self.activation_function(z)  # Apply activation function
 
-    def update(self, optimizer):
+    def update(self, optimizer, layer_idx):
         """Update parameters using the provided optimizer"""
-        self.weights = optimizer.update(self.weights, self.weights.grad())
-        self.biases = optimizer.update(self.biases, self.biases.grad())
+        self.weights, self.biases = optimizer.update(self, layer_idx)
 
 class NeuralNetwork:
     """
@@ -74,15 +73,15 @@ class NeuralNetwork:
             loss.backward()
             
             # Update parameters in each layer
-            for layer in self.layers:
-                layer.update(self.optimizer)
+            for idx, layer in enumerate(self.layers):
+                layer.update(self.optimizer, idx)
             
             # Reset gradients for next iteration
-            X = X.restart()
-            y = y.restart()
+            X.restart()
+            y.restart()
             for layer in self.layers:
-                layer.weights = layer.weights.restart()
-                layer.biases = layer.biases.restart()
+                layer.weights.restart()
+                layer.biases.restart()
                 
             if print_every == None:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.data}")
@@ -101,14 +100,14 @@ def example_neural_network():
     nn = NeuralNetwork([
         DenseLayer(input_size, hidden_size, activation.relu),
         DenseLayer(hidden_size, output_size, activation.tanh)
-    ], losses.mse_loss, optimizers.SGD(learning_rate=1))
+    ], losses.mse_loss, optimizers.SGDMomentum(learning_rate=0.1))
 
     # Generate some dummy data
     X = MLArray([[0, 0], [0, 1], [1, 0], [1, 1]])
     y = MLArray([[0], [1], [1], [0]])
 
     # Train the network
-    nn.train(X, y, epochs=1000)
+    nn.train(X, y, epochs=100)
 
     y_pred = nn.forward(X)
     print(y_pred)

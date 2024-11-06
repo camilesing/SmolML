@@ -63,7 +63,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
         return NeuralNetwork([
             DenseLayer(self.input_size, self.hidden_size, activation.relu),
             DenseLayer(self.hidden_size, self.output_size, activation.sigmoid)
-        ], losses.binary_cross_entropy, optimizer=optimizers.SGD(learning_rate=1))
+        ], losses.binary_cross_entropy, optimizer=optimizers.SGDMomentum(learning_rate=0.1))
 
     def _create_tf_model(self):
         """
@@ -109,8 +109,8 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
             loss = self.custom_model.loss_function(y_pred, self.y_train_ml)
             loss.backward()
             
-            for layer in self.custom_model.layers:
-                layer.update(self.custom_model.optimizer)
+            for idx, layer in enumerate(self.custom_model.layers):
+                layer.update(self.custom_model.optimizer, idx)
             
             # Reset computational graph
             self.X_train_ml = self.X_train_ml.restart()

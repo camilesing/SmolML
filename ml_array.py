@@ -19,7 +19,7 @@ class MLArray:
     ///////////////
     """
 
-    def __init__(self, data) -> None:
+    def __init__(self, data, ml_array_id = None) -> None:
         """
         Creates a new MLArray given some data (scalar, 1D -using a python list-, or >=2D -using nested lists-)
         """
@@ -333,19 +333,18 @@ class MLArray:
         """
         Replace all Value objects in the MLArray with new Value objects containing the same data, effectively resetting the computational graph.
         """
-        self.data = self._restart_data(self.data)
+        self._restart_data(self.data)
         return self
 
     def _restart_data(self, data):
         """
-        Recursively obtains all data and initializes new Value objects with it, thus restarting its computational graph.
+        Recursively traverses all Value objects and sets their gradients to 0.
         """
         if isinstance(data, Value):
-            return Value(data.data)
+            data.grad = 0
         elif isinstance(data, list):
-            return [self._restart_data(item) for item in data]
-        else:
-            return data
+            for item in data:
+                self._restart_data(item)
     
     def backward(self):
         """
@@ -391,6 +390,20 @@ class MLArray:
         if len(shape) == 1:
             return [None] * shape[0]
         return [self._create_nested_list(shape[1:]) for _ in range(shape[0])]
+
+    def update_values(self, new_data):
+        """
+        Updates the existing Values in the MLArray with new data while preserving the array structure.
+        """
+        def update_recursive(current_data, new_data):
+            if isinstance(current_data, Value):
+                current_data.data = new_data.data if isinstance(new_data, Value) else new_data
+            elif isinstance(current_data, list):
+                for i, (curr, new) in enumerate(zip(current_data, new_data)):
+                    update_recursive(curr, new)
+                    
+        update_recursive(self.data, new_data.data if isinstance(new_data, MLArray) else new_data)
+        return self
     
     @staticmethod
     def _broadcast_shapes(shape1, shape2):
