@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import matplotlib.pyplot as plt
 from ml_array import MLArray, zeros
 import losses
@@ -58,18 +62,21 @@ def compare_optimizers():
     # Create networks with different optimizers
     network_sgd = create_network(optimizers.SGD(learning_rate=0.1))
     network_momentum = create_network(optimizers.SGDMomentum(learning_rate=0.1, momentum_coefficient=0.9))
+    network_adagrad = create_network(optimizers.AdaGrad(learning_rate=0.1))
     
-    # Train both networks
+    # Train networks
     losses_sgd = train_and_get_losses(network_sgd, X, y)
     losses_momentum = train_and_get_losses(network_momentum, X, y)
+    losses_adagrad = train_and_get_losses(network_adagrad, X, y)
     
     # Plot results
     plt.figure(figsize=(10, 6))
     plt.plot(losses_sgd, label='SGD')
     plt.plot(losses_momentum, label='SGD with Momentum')
+    plt.plot(losses_adagrad, label='Adagrad')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('SGD vs SGD with Momentum')
+    plt.title('Optimizer Comparison')
     plt.legend()
     plt.grid(True)
     plt.yscale('log')
@@ -78,6 +85,7 @@ def compare_optimizers():
     # Print final losses
     print(f"Final loss SGD: {losses_sgd[-1]:.6f}")
     print(f"Final loss SGD with Momentum: {losses_momentum[-1]:.6f}")
+    print(f"Final loss Adagrad: {losses_adagrad[-1]:.6f}")
 
 if __name__ == '__main__':
     compare_optimizers()

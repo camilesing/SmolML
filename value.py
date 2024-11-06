@@ -54,7 +54,8 @@ class Value:
         Raises Value to a power and sets up gradient computation.
         Currently only supports int/float powers.
         """
-        assert isinstance(other, (int, float)), "only supporting int/float powers for now"
+        other = other.data if isinstance(other, Value) else other
+        assert isinstance(other, (int, float)), "only supporting int/float/value powers for now"
         out = Value(self.data**other, (self,), f"**{other}")
         def _backward():
             self.grad += (other * self.data ** (other - 1)) * out.grad

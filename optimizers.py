@@ -61,3 +61,33 @@ class SGDMomentum(Optimizer):
         
         return new_weights, new_biases
 
+
+class AdaGrad(Optimizer):
+    """
+    Stochastic Gradient Descent optimizer with momentum.
+    This optimizer accelerates SGD by accumulating a velocity vector in the direction of persistent gradients,
+    helping to avoid local minima and speed up convergence.
+    """
+    def __init__(self, learning_rate: float = 0.01):
+        super().__init__(learning_rate)
+        self.epsilon = 1e-8
+        self.squared_gradients = {} 
+        
+    def update(self, layer, layer_idx):
+        """
+        Update rule for SGD with momentum: v = βv + α∇θ, θ = θ - v
+        where β is the momentum coefficient and α is the learning rate.
+        """
+        # Initialize velocities for this layer if not exist
+        if layer_idx not in self.squared_gradients:
+            self.squared_gradients[layer_idx] = {"weights": zeros(*layer.weights.shape),
+                                        "biases": zeros(*layer.biases.shape)}
+        
+        self.squared_gradients[layer_idx]["weights"] += layer.weights.grad()**2 
+        self.squared_gradients[layer_idx]["biases"] += layer.biases.grad()**2 
+
+        # parameter = parameter - (α / √(G + ε)) * gradient
+        new_weights = layer.weights - (self.learning_rate / (self.squared_gradients[layer_idx]["weights"] + self.epsilon).sqrt()) * layer.weights.grad()
+        new_biases = layer.biases - (self.learning_rate / (self.squared_gradients[layer_idx]["biases"] + self.epsilon).sqrt()) * layer.biases.grad()
+        
+        return new_weights, new_biases

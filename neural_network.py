@@ -100,7 +100,7 @@ def example_neural_network():
     nn = NeuralNetwork([
         DenseLayer(input_size, hidden_size, activation.relu),
         DenseLayer(hidden_size, output_size, activation.tanh)
-    ], losses.mse_loss, optimizers.SGDMomentum(learning_rate=0.1))
+    ], losses.mse_loss, optimizers.AdaGrad(learning_rate=0.1))
 
     # Generate some dummy data
     X = MLArray([[0, 0], [0, 1], [1, 0], [1, 1]])
