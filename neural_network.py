@@ -62,12 +62,14 @@ class NeuralNetwork:
         Trains the network using gradient descent for the specified number of epochs.
         Prints loss every 100 epochs to monitor training progress.
         """
+        losses = []
         for epoch in range(epochs):
             # Forward pass through the network
             y_pred = self.forward(X)
             
             # Compute loss between predictions and targets
             loss = self.loss_function(y_pred, y)
+            losses.append(loss.data.data)
             
             # Backward pass to compute gradients
             loss.backward()
@@ -89,6 +91,8 @@ class NeuralNetwork:
                 # Print training progress
                 if (epoch+1) % print_every == 0:
                     print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.data}")
+
+            return losses
 
 def example_neural_network():
     # Example usage
