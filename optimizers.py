@@ -91,3 +91,56 @@ class AdaGrad(Optimizer):
         new_biases = layer.biases - (self.learning_rate / (self.squared_gradients[layer_idx]["biases"] + self.epsilon).sqrt()) * layer.biases.grad()
         
         return new_weights, new_biases
+
+
+class Adam(Optimizer):
+    """
+    Adam (Adaptive Moment Estimation) optimizer.
+    Combines the benefits of:
+    1. Momentum: By keeping track of exponentially decaying gradient average
+    2. RMSprop: By keeping track of exponentially decaying squared gradients
+    Also includes bias correction terms to handle initialization.
+    """
+    def __init__(self, learning_rate: float = 0.01, exp_decay_gradients: float = 0.9, exp_decay_squared: float = 0.999):
+        super().__init__(learning_rate)
+        self.exp_decay_gradients = exp_decay_gradients  # β₁: Decay rate for gradient momentum
+        self.exp_decay_squared = exp_decay_squared      # β₂: Decay rate for squared gradient momentum
+        self.gradients_momentum = {}                    # First moment estimates
+        self.squared_gradients_momentum = {}            # Second moment estimates
+        self.epsilon = 1e-8                            # Small constant for numerical stability
+        self.timestep = 1                              # Timestep for bias correction
+        
+    def update(self, layer, layer_idx):
+        """
+        Update rule for Adam: θ = θ - α * m̂ / (√v̂ + ε)
+        where:
+        - m̂ is the bias-corrected first moment estimate
+        - v̂ is the bias-corrected second moment estimate
+        - α is the learning rate
+        - ε is a small constant for numerical stability
+        """
+        # Initialize velocities for this layer if not exist
+        if layer_idx not in self.gradients_momentum:
+            self.gradients_momentum[layer_idx] = {"weights": zeros(*layer.weights.shape),
+                                                "biases": zeros(*layer.biases.shape)}
+        if layer_idx not in self.squared_gradients_momentum:
+            self.squared_gradients_momentum[layer_idx] = {"weights": zeros(*layer.weights.shape),
+                                                "biases": zeros(*layer.biases.shape)}
+        
+        self.gradients_momentum[layer_idx]['weights'] = self.exp_decay_gradients * self.gradients_momentum[layer_idx]['weights'] + (1 - self.exp_decay_gradients) * layer.weights.grad()
+        self.gradients_momentum[layer_idx]['biases'] = self.exp_decay_gradients * self.gradients_momentum[layer_idx]['biases'] + (1 - self.exp_decay_gradients) * layer.biases.grad()
+
+        self.squared_gradients_momentum[layer_idx]['weights'] = self.exp_decay_squared * self.squared_gradients_momentum[layer_idx]['weights'] + (1 - self.exp_decay_squared) * layer.weights.grad()**2
+        self.squared_gradients_momentum[layer_idx]['biases'] = self.exp_decay_squared * self.squared_gradients_momentum[layer_idx]['biases'] + (1 - self.exp_decay_squared) * layer.biases.grad()**2
+
+        m_w = self.gradients_momentum[layer_idx]['weights'] / (1 - self.exp_decay_gradients ** self.timestep)
+        m_b = self.gradients_momentum[layer_idx]['biases'] / (1 - self.exp_decay_gradients ** self.timestep)
+
+        v_w = self.squared_gradients_momentum[layer_idx]['weights'] / (1 - self.exp_decay_squared ** self.timestep)
+        v_b = self.squared_gradients_momentum[layer_idx]['biases'] / (1 - self.exp_decay_squared ** self.timestep)
+
+        # Compute new parameters
+        new_weights = layer.weights - self.learning_rate * m_w / (v_w.sqrt() + self.epsilon)
+        new_biases = layer.biases - self.learning_rate * m_b / (v_b.sqrt() + self.epsilon)
+        
+        return new_weights, new_biases
