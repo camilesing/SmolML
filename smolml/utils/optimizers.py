@@ -1,4 +1,4 @@
-from ml_array import zeros
+from smolml.core.ml_array import zeros
 
 class Optimizer:
     """Base optimizer class that defines the interface for all optimizers"""

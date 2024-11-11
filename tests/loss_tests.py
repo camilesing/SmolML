@@ -8,8 +8,8 @@ import tensorflow as tf
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from ml_array import MLArray
-import losses
+from smolml.core.ml_array import MLArray
+import smolml.utils.losses as losses
 
 class TestLossFunctions(unittest.TestCase):
     """

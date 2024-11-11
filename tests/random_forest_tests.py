@@ -5,8 +5,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import unittest
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-from ml_array import MLArray
-from random_forest import RandomForest
+from smolml.core.ml_array import MLArray
+from smolml.models.tree.random_forest import RandomForest
 
 class TestRandomForest(unittest.TestCase):
     def setUp(self):

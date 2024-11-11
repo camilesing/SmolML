@@ -4,7 +4,7 @@ A pure Python machine learning library built entirely from scratch for education
 
 ## Overview
 
-SmolML implements a fully functional machine learning library using only `matplotlib`, `random` and `math` modules. While not optimized for production use, it serves as an excellent educational tool for understanding machine learning fundamentals through hands-on implementation.
+SmolML implements a fully functional machine learning library using only `collections`, `random` and `math` modules. While not optimized for production use, it serves as an excellent educational tool for understanding machine learning fundamentals through hands-on implementation.
 
 ## Features
 
@@ -12,6 +12,7 @@ SmolML implements a fully functional machine learning library using only `matplo
 - Autograd Engine
 - Scalers
 - Optimizers
+- Weight Initializers
 - Functions
     - Loss functions
     - Activation functions

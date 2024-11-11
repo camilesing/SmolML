@@ -1,7 +1,7 @@
-from ml_array import MLArray
+from smolml.core.ml_array import MLArray
 import random
 from collections import Counter
-from decision_tree import DecisionTree
+from smolml.models.tree.decision_tree import DecisionTree
 
 """
 /////////////////////

@@ -1,12 +1,7 @@
-import initializers
-from ml_array import MLArray
-import ml_array
-import losses
-import matplotlib
-matplotlib.use('TkAgg')  # Add this line before importing pyplot
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
-import numpy as np
+import smolml.utils.initializers
+from smolml.core.ml_array import MLArray
+import smolml.core.ml_array as ml_array
+import smolml.utils.losses as losses
 
 """
 //////////////////

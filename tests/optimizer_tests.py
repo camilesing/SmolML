@@ -3,14 +3,15 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import matplotlib.pyplot as plt
-from ml_array import MLArray, zeros
-import losses
-import activation
-import initializers
-import optimizers
+from smolml.core.ml_array import MLArray, zeros
+import smolml.utils.losses as losses
+import smolml.utils.activation as activation
+import smolml.utils.initializers as initializers
+import smolml.utils.optimizers as optimizers
 import random
 import numpy as np
-from neural_network import NeuralNetwork, DenseLayer
+from smolml.models.nn.neural_network import NeuralNetwork
+from smolml.models.nn.layer import DenseLayer
 
 def create_network(optimizer):
     """Helper function to create a network with specified optimizer"""

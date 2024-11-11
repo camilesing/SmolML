@@ -5,8 +5,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import unittest
 import numpy as np
 import tensorflow as tf
-import activation
-from ml_array import MLArray
+import smolml.utils.activation as activation
+from smolml.core.ml_array import MLArray
 
 class TestActivationsVsTensorflow(unittest.TestCase):
     """

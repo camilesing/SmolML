@@ -9,11 +9,12 @@ from sklearn.datasets import make_moons
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from ml_array import MLArray
-from neural_network import NeuralNetwork, DenseLayer
-import activation
-import losses
-import optimizers
+from smolml.core.ml_array import MLArray
+from smolml.models.nn.neural_network import NeuralNetwork
+from smolml.models.nn.layer import DenseLayer
+import smolml.utils.activation as activation
+import smolml.utils.losses as losses
+import smolml.utils.optimizers as optimizers
 
 class TestNeuralNetworkVsTensorflow(unittest.TestCase):
     """

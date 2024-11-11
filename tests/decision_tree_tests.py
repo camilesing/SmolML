@@ -10,8 +10,8 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from ml_array import MLArray
-from decision_tree import DecisionTree
+from smolml.core.ml_array import MLArray
+from smolml.models.tree.decision_tree import DecisionTree
 
 class TestDecisionTree(unittest.TestCase):
     """

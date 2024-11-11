@@ -9,8 +9,8 @@ from sklearn.preprocessing import MinMaxScaler as SKMinMaxScaler
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from ml_array import MLArray
-from scalers import StandardScaler, MinMaxScaler
+from smolml.core.ml_array import MLArray
+from smolml.preprocessing.scalers import StandardScaler, MinMaxScaler
 
 class TestScalers(unittest.TestCase):
     """

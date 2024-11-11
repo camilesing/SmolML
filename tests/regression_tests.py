@@ -4,14 +4,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import unittest
 import numpy as np
-from ml_array import MLArray, randn, ones
+from smolml.core.ml_array import MLArray, randn, ones
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-import initializers
-import losses
-from regression import LinearRegression, PolynomialRegression
+import smolml.utils.initializers as initializers
+import smolml.utils.losses as losses
+from smolml.models.regression import LinearRegression, PolynomialRegression
 
 class TestRegressionVisualization(unittest.TestCase):
     """
@@ -26,9 +26,9 @@ class TestRegressionVisualization(unittest.TestCase):
         np.random.seed(42)
         
         # Training parameters
-        self.iterations = 1000
-        self.learning_rate = 0.01
-        self.epochs_to_store = [0, 10, 50, 100, 500, 999]
+        self.iterations = 100
+        self.learning_rate = 0.1
+        self.epochs_to_store = [0, 5, 10, 25, 50, 100]
         
         # Set plotting style
         plt.rcParams['font.family'] = 'sans-serif'
@@ -42,13 +42,13 @@ class TestRegressionVisualization(unittest.TestCase):
         plt.rcParams['grid.linestyle'] = '-'
         plt.rcParams['grid.linewidth'] = 1
 
-    def generate_linear_data(self, size=100):
+    def generate_linear_data(self, size=25):
         """Generate data with linear relationship plus noise"""
         X = randn(size, 1)
         y = X * 2 + 1 + randn(size, 1) * 0.1
         return X, y
 
-    def generate_nonlinear_data(self, size=100):
+    def generate_nonlinear_data(self, size=25):
         """Generate data with polynomial relationship plus noise"""
         X = randn(size, 1)
         y = X * 2 + X * X * 3 + 1 + randn(size, 1) * 0.1
@@ -75,7 +75,7 @@ class TestRegressionVisualization(unittest.TestCase):
             if i in self.epochs_to_store:
                 predictions_history.append(y_pred.to_list())
             
-            if (i+1) % 100 == 0:
+            if (i+1) % 10 == 0:
                 print(f"Epoch {i + 1}/{self.iterations}, Loss: {loss.data}")
         
         # Convert to numpy for plotting

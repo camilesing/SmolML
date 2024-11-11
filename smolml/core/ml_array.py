@@ -1,4 +1,4 @@
-from value import Value
+from .value import Value
 import random
 import math
 

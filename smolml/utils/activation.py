@@ -1,4 +1,4 @@
-from ml_array import MLArray
+from smolml.core.ml_array import MLArray
 import math
 
 """
