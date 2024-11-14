@@ -59,12 +59,3 @@ def huber_loss(y_pred, y_true, delta=1.0):
     return MLArray([[quad if abs_d <= delta else lin 
                     for quad, lin, abs_d in zip(row_quad, row_lin, row_abs)]
                     for row_quad, row_lin, row_abs in zip(quadratic.data, linear.data, abs_diff.data)]).mean()
-
-def log_cosh_loss(y_pred, y_true):
-    """
-    Log-Cosh Loss.
-    Smooth approximation of Huber loss.
-    Combines benefits of MSE and MAE without hyperparameters.
-    """
-    diff = y_pred - y_true
-    return cosh(diff).log().mean()

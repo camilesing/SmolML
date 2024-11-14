@@ -20,7 +20,7 @@ from .utils.initializers import (
 )
 from .utils.losses import (
     mse_loss, mae_loss, binary_cross_entropy, 
-    categorical_cross_entropy, huber_loss, log_cosh_loss
+    categorical_cross_entropy, huber_loss
 )
 from .utils.optimizers import (
     Optimizer, SGD, SGDMomentum, AdaGrad, Adam

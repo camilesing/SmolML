@@ -5,13 +5,13 @@ class Optimizer:
     def __init__(self, learning_rate: float = 0.01):
         self.learning_rate = learning_rate
     
-    def update(self, param, grad):
+    def update(self, object, object_idx, param_names):
         """Update rule to be implemented by specific optimizers"""
         raise NotImplementedError
 
 class SGD(Optimizer):
     """Standard Stochastic Gradient Descent optimizer"""
-    def update(self, layer, layer_idx):
+    def update(self, object, object_idx, param_names):
         """
         Update rule for standard SGD: θ = θ - α∇θ
         where α is the learning rate.
@@ -19,10 +19,11 @@ class SGD(Optimizer):
         This is the most basic form of gradient descent, which directly updates
         parameters in the opposite direction of the gradient, scaled by the learning rate.
         """
-        new_weights = layer.weights - self.learning_rate * layer.weights.grad()
-        new_biases = layer.biases - self.learning_rate * layer.biases.grad()
-        return new_weights, new_biases
-
+        new_params = tuple(
+            getattr(object, name) - self.learning_rate * getattr(object, name).grad()
+            for name in param_names
+        )
+        return new_params
 
 class SGDMomentum(Optimizer):
     """
@@ -33,65 +34,66 @@ class SGDMomentum(Optimizer):
     def __init__(self, learning_rate: float = 0.01, momentum_coefficient: float = 0.9):
         super().__init__(learning_rate)
         self.momentum_coefficient = momentum_coefficient
-        self.velocities = {}  # Dictionary to store velocities for each layer
+        self.velocities = {}
         
-    def update(self, layer, layer_idx):
+    def update(self, object, object_idx, param_names):
         """
         Update rule for SGD with momentum: v = βv + α∇θ, θ = θ - v
         where β is the momentum coefficient and α is the learning rate.
         """
         # Initialize velocities for this layer if not exist
-        if layer_idx not in self.velocities:
-            self.velocities[layer_idx] = {"weights": zeros(*layer.weights.shape),
-                                        "biases": zeros(*layer.biases.shape)}
+        if object_idx not in self.velocities:
+            self.velocities[object_idx] = {
+                name: zeros(*getattr(object, name).shape) for name in param_names
+            }
         
-        # Update velocity and parameters for weights
-        v_w = self.velocities[layer_idx]["weights"]
-        v_w = self.momentum_coefficient * v_w + self.learning_rate * layer.weights.grad()
-        self.velocities[layer_idx]["weights"] = v_w
+        new_params = []
+        for name in param_names:
+            # Update velocity
+            v = self.velocities[object_idx][name]
+            v = self.momentum_coefficient * v + self.learning_rate * getattr(object, name).grad()
+            self.velocities[object_idx][name] = v
+            
+            # Compute new parameter
+            new_params.append(getattr(object, name) - v)
         
-        # Update velocity and parameters for biases
-        v_b = self.velocities[layer_idx]["biases"]
-        v_b = self.momentum_coefficient * v_b + self.learning_rate * layer.biases.grad()
-        self.velocities[layer_idx]["biases"] = v_b
-        
-        # Compute new parameters
-        new_weights = layer.weights - v_w
-        new_biases = layer.biases - v_b
-        
-        return new_weights, new_biases
-
+        return tuple(new_params)
 
 class AdaGrad(Optimizer):
     """
-    Stochastic Gradient Descent optimizer with momentum.
-    This optimizer accelerates SGD by accumulating a velocity vector in the direction of persistent gradients,
-    helping to avoid local minima and speed up convergence.
+    Adaptive Gradient optimizer.
+    Adapts the learning rate to parameters, performing smaller updates 
+    for frequently updated parameters and larger updates for infrequent ones.
     """
     def __init__(self, learning_rate: float = 0.01):
         super().__init__(learning_rate)
         self.epsilon = 1e-8
-        self.squared_gradients = {} 
+        self.squared_gradients = {}
         
-    def update(self, layer, layer_idx):
+    def update(self, object, object_idx, param_names):
         """
-        Update rule for SGD with momentum: v = βv + α∇θ, θ = θ - v
-        where β is the momentum coefficient and α is the learning rate.
+        Update rule for AdaGrad: θ = θ - (α / √(G + ε)) * ∇θ
+        where G is the sum of squared gradients up to the current timestep
         """
-        # Initialize velocities for this layer if not exist
-        if layer_idx not in self.squared_gradients:
-            self.squared_gradients[layer_idx] = {"weights": zeros(*layer.weights.shape),
-                                        "biases": zeros(*layer.biases.shape)}
+        # Initialize squared gradients for this layer if not exist
+        if object_idx not in self.squared_gradients:
+            self.squared_gradients[object_idx] = {
+                name: zeros(*getattr(object, name).shape) for name in param_names
+            }
         
-        self.squared_gradients[layer_idx]["weights"] += layer.weights.grad()**2 
-        self.squared_gradients[layer_idx]["biases"] += layer.biases.grad()**2 
-
-        # parameter = parameter - (α / √(G + ε)) * gradient
-        new_weights = layer.weights - (self.learning_rate / (self.squared_gradients[layer_idx]["weights"] + self.epsilon).sqrt()) * layer.weights.grad()
-        new_biases = layer.biases - (self.learning_rate / (self.squared_gradients[layer_idx]["biases"] + self.epsilon).sqrt()) * layer.biases.grad()
+        new_params = []
+        for name in param_names:
+            # Update squared gradients sum
+            self.squared_gradients[object_idx][name] += getattr(object, name).grad()**2
+            
+            # Compute new parameter
+            new_params.append(
+                getattr(object, name) - (self.learning_rate / 
+                (self.squared_gradients[object_idx][name] + self.epsilon).sqrt()) * 
+                getattr(object, name).grad()
+            )
         
-        return new_weights, new_biases
-
+        return tuple(new_params)
 
 class Adam(Optimizer):
     """
@@ -103,44 +105,51 @@ class Adam(Optimizer):
     """
     def __init__(self, learning_rate: float = 0.01, exp_decay_gradients: float = 0.9, exp_decay_squared: float = 0.999):
         super().__init__(learning_rate)
-        self.exp_decay_gradients = exp_decay_gradients  # β₁: Decay rate for gradient momentum
-        self.exp_decay_squared = exp_decay_squared      # β₂: Decay rate for squared gradient momentum
-        self.gradients_momentum = {}                    # First moment estimates
-        self.squared_gradients_momentum = {}            # Second moment estimates
-        self.epsilon = 1e-8                            # Small constant for numerical stability
-        self.timestep = 1                              # Timestep for bias correction
+        self.exp_decay_gradients = exp_decay_gradients
+        self.exp_decay_squared = exp_decay_squared
+        self.gradients_momentum = {}
+        self.squared_gradients_momentum = {}
+        self.epsilon = 1e-8
+        self.timestep = 1
         
-    def update(self, layer, layer_idx):
+    def update(self, object, object_idx, param_names):
         """
         Update rule for Adam: θ = θ - α * m̂ / (√v̂ + ε)
         where:
         - m̂ is the bias-corrected first moment estimate
         - v̂ is the bias-corrected second moment estimate
-        - α is the learning rate
-        - ε is a small constant for numerical stability
         """
-        # Initialize velocities for this layer if not exist
-        if layer_idx not in self.gradients_momentum:
-            self.gradients_momentum[layer_idx] = {"weights": zeros(*layer.weights.shape),
-                                                "biases": zeros(*layer.biases.shape)}
-        if layer_idx not in self.squared_gradients_momentum:
-            self.squared_gradients_momentum[layer_idx] = {"weights": zeros(*layer.weights.shape),
-                                                "biases": zeros(*layer.biases.shape)}
+        # Initialize momentums if not exist
+        if object_idx not in self.gradients_momentum:
+            self.gradients_momentum[object_idx] = {
+                name: zeros(*getattr(object, name).shape) for name in param_names
+            }
+            self.squared_gradients_momentum[object_idx] = {
+                name: zeros(*getattr(object, name).shape) for name in param_names
+            }
         
-        self.gradients_momentum[layer_idx]['weights'] = self.exp_decay_gradients * self.gradients_momentum[layer_idx]['weights'] + (1 - self.exp_decay_gradients) * layer.weights.grad()
-        self.gradients_momentum[layer_idx]['biases'] = self.exp_decay_gradients * self.gradients_momentum[layer_idx]['biases'] + (1 - self.exp_decay_gradients) * layer.biases.grad()
-
-        self.squared_gradients_momentum[layer_idx]['weights'] = self.exp_decay_squared * self.squared_gradients_momentum[layer_idx]['weights'] + (1 - self.exp_decay_squared) * layer.weights.grad()**2
-        self.squared_gradients_momentum[layer_idx]['biases'] = self.exp_decay_squared * self.squared_gradients_momentum[layer_idx]['biases'] + (1 - self.exp_decay_squared) * layer.biases.grad()**2
-
-        m_w = self.gradients_momentum[layer_idx]['weights'] / (1 - self.exp_decay_gradients ** self.timestep)
-        m_b = self.gradients_momentum[layer_idx]['biases'] / (1 - self.exp_decay_gradients ** self.timestep)
-
-        v_w = self.squared_gradients_momentum[layer_idx]['weights'] / (1 - self.exp_decay_squared ** self.timestep)
-        v_b = self.squared_gradients_momentum[layer_idx]['biases'] / (1 - self.exp_decay_squared ** self.timestep)
-
-        # Compute new parameters
-        new_weights = layer.weights - self.learning_rate * m_w / (v_w.sqrt() + self.epsilon)
-        new_biases = layer.biases - self.learning_rate * m_b / (v_b.sqrt() + self.epsilon)
+        new_params = []
+        for name in param_names:
+            # Update biased first moment estimate
+            self.gradients_momentum[object_idx][name] = (
+                self.exp_decay_gradients * self.gradients_momentum[object_idx][name] + 
+                (1 - self.exp_decay_gradients) * getattr(object, name).grad()
+            )
+            
+            # Update biased second moment estimate
+            self.squared_gradients_momentum[object_idx][name] = (
+                self.exp_decay_squared * self.squared_gradients_momentum[object_idx][name] + 
+                (1 - self.exp_decay_squared) * getattr(object, name).grad()**2
+            )
+            
+            # Compute bias-corrected moments
+            m = self.gradients_momentum[object_idx][name] / (1 - self.exp_decay_gradients ** self.timestep)
+            v = self.squared_gradients_momentum[object_idx][name] / (1 - self.exp_decay_squared ** self.timestep)
+            
+            # Compute new parameter
+            new_params.append(
+                getattr(object, name) - self.learning_rate * m / (v.sqrt() + self.epsilon)
+            )
         
-        return new_weights, new_biases
+        self.timestep += 1
+        return tuple(new_params)

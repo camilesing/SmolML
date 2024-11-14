@@ -1,4 +1,5 @@
-import smolml.utils.initializers
+import smolml.utils.initializers as initializers
+import smolml.utils.optimizers as optimizers
 from smolml.core.ml_array import MLArray
 import smolml.core.ml_array as ml_array
 import smolml.utils.losses as losses
@@ -9,81 +10,97 @@ import smolml.utils.losses as losses
 //////////////////
 """
 
-class LinearRegression:
+class Regression:
+    """
+    Base class for regression algorithms implementing common functionality.
+    Provides framework for fitting models using gradient descent optimization.
+    Specific regression types should inherit from this class.
+    """
+    def __init__(self, input_size: int, loss_function: callable = losses.mse_loss, optimizer: optimizers.Optimizer = optimizers.SGD, initializer: initializers.WeightInitializer = initializers.XavierUniform):
+        """
+        Initializes base regression model with common parameters.
+        """
+        self.input_size = input_size
+        self.loss_function = loss_function
+        self.optimizer = optimizer
+        self.initializer = initializer
+        self.weights = self.initializer.initialize((self.input_size,))
+        self.bias = ml_array.ones((1))
+
+    def fit(self, X, y, iterations: int = 100, verbose: bool = True, print_every: int = 1):
+        """
+        Trains the regression model using gradient descent.
+        """
+        X, y = MLArray.ensure_array(X, y)
+        losses = []
+        for i in range(iterations):
+            # Make prediction 
+            y_pred = self.predict(X)
+            # Compute loss
+            loss = self.loss_function(y, y_pred)
+            losses.append(loss.data.data)
+            # Backward pass
+            loss.backward()
+
+            # Update parameters
+            self.weights, self.bias = self.optimizer.update(self, self.__class__.__name__, param_names=("weights", "bias"))
+
+            # Reset gradients
+            X, y = self.restart(X, y)
+
+            if verbose:
+                if (i+1) % print_every == 0:
+                    print(f"Iteration {i + 1}/{iterations}, Loss: {loss.data}")
+
+        return losses
+
+    def restart(self, X, y):
+        """
+        Resets gradients for all parameters and data for next iteration.
+        """
+        X = X.restart()
+        y = y.restart()
+        self.weights = self.weights.restart()
+        self.bias = self.bias.restart()
+        return X, y
+    
+    def predict(self, X):
+        """
+        Abstract method for making predictions.
+        Must be implemented by specific regression classes.
+        """
+        raise NotImplementedError("Regression is only base class for Regression algorithms, use one of the classes that inherit from it.")
+
+class LinearRegression(Regression):
    """
    Implements linear regression using gradient descent optimization.
    The model learns to fit: y = X @ weights + bias
    """
-   def __init__(self, iterations, learning_rate) -> None:
+   def __init__(self, input_size: int, loss_function: callable = losses.mse_loss, optimizer: optimizers.Optimizer = optimizers.SGD, initializer: initializers.WeightInitializer = initializers.XavierUniform):
        """
        Initializes regression model with training parameters.
        """
-       self.iterations = iterations
-       self.learning_rate = learning_rate 
-       
-   def initialize_weights(self, input_size, weight_initializer):
-       """
-       Initializes weights using specified initializer and sets bias to ones.
-       """
-       self.weights = weight_initializer.initialize((input_size,))
-       self.bias = ml_array.ones((1))
-
-   def fit(self, X, y):
-       """
-       Trains the model using gradient descent for specified iterations.
-       Prints loss every 100 epochs to monitor convergence.
-       """
-       for i in range(self.iterations):
-           # Make prediction 
-           y_pred = self.predict(X)
-           # Compute loss
-           loss = losses.mse_loss(y, y_pred)
-           # Backward pass
-           loss.backward()
-
-           # Update parameters
-           self.weights = self.weights - self.learning_rate * self.weights.grad()
-           self.bias = self.bias - self.learning_rate * self.bias.grad()
-
-           # Reset gradients
-           X, y = self.restart(X, y)
-
-           if (i+1) % 100 == 0:
-               print(f"Epoch {i + 1}/{self.iterations}, Loss: {loss.data}")
-
-   def update_parameters(self):
-       """
-       Updates weights and bias using computed gradients.
-       """
-       self.weights = self.weights - self.learning_rate * self.weights.grad()
-       self.bias = self.bias - self.learning_rate * self.bias.grad()
+       super().__init__(input_size, loss_function, optimizer, initializer)
 
    def predict(self, X):
        """
        Makes predictions using linear model equation.
        """
+       if not isinstance(X, MLArray):
+            raise TypeError(f"Input data must be MLArray, not {type(X)}")
        return X @ self.weights + self.bias
-   
-   def restart(self, X, y):
-       """
-       Resets gradients for all parameters and data for next iteration.
-       """
-       X = X.restart()
-       y = y.restart()
-       self.weights = self.weights.restart()
-       self.bias = self.bias.restart()
-       return X, y
 
-class PolynomialRegression(LinearRegression):
+class PolynomialRegression(Regression):
    """
    Extends linear regression to fit polynomial relationships.
    Transforms features into polynomial terms before fitting.
    """
-   def __init__(self, degree, iterations, learning_rate):
+   def __init__(self, input_size: int, degree: int, loss_function: callable = losses.mse_loss, optimizer: optimizers.Optimizer = optimizers.SGD, initializer: initializers.WeightInitializer = initializers.XavierUniform):
        """
        Initializes polynomial model with degree and training parameters.
        """
-       super().__init__(iterations, learning_rate)
+       # Initialize with degree for number of weights needed
+       super().__init__(degree, loss_function, optimizer, initializer)
        self.degree = degree
        
    def transform_features(self, X):
@@ -92,41 +109,34 @@ class PolynomialRegression(LinearRegression):
        For input X and degree 2, outputs [X, X^2].
        """
        features = [X]
+       current = X
        for d in range(2, self.degree + 1):
            # Use element-wise multiplication for power
-           power = X
-           for _ in range(d-1):
-               power = power * X
-           features.append(power)
+           current = current * X
+           features.append(current)
            
-       # Concatenate features side by side
-       result = features[0]
-       for feature in features[1:]:
-           # Assuming arrays are 2D with shape (n, 1)
-           new_data = []
-           for i in range(len(result.data)):
-               new_data.append(result.data[i] + feature.data[i])
-           result = MLArray(new_data)
+       # Create a new MLArray for concatenated features
+       new_data = []
+       for i in range(len(X.data)):
+           row = []
+           for feature in features:
+               row.append(feature.data[i][0])  # Extract value from each feature
+           new_data.append(row)
            
-       return result
-
-   def initialize_weights(self, input_size, weight_initializer):
-       """
-       Initializes weights for each polynomial term.
-       """
-       self.weights = weight_initializer.initialize((self.degree,))
-       self.bias = ml_array.ones((1))
+       return MLArray(new_data)
 
    def predict(self, X):
        """
        Makes predictions after transforming features to polynomial form.
        """
+       if not isinstance(X, MLArray):
+            raise TypeError(f"Input data must be MLArray, not {type(X)}")
        X_poly = self.transform_features(X)
        return X_poly @ self.weights + self.bias
 
-   def fit(self, X, y):
+   def fit(self, X, y, iterations: int = 100, verbose: bool = True, print_every: int = 1):
        """
        Transforms features to polynomial form before training.
        """
        X_poly = self.transform_features(X)
-       super().fit(X_poly, y)
+       return super().fit(X_poly, y, iterations, verbose, print_every)

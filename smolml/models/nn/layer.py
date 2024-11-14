@@ -32,4 +32,4 @@ class DenseLayer:
 
     def update(self, optimizer, layer_idx):
         """Update parameters using the provided optimizer"""
-        self.weights, self.biases = optimizer.update(self, layer_idx)
+        self.weights, self.biases = optimizer.update(self, layer_idx, param_names=("weights", "biases"))

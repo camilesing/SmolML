@@ -1,4 +1,5 @@
 from smolml.core.ml_array import MLArray
+from smolml.models.nn import DenseLayer
 import smolml.utils.losses as losses
 import smolml.utils.activation as activation
 import smolml.utils.optimizers as optimizers
@@ -26,15 +27,18 @@ class NeuralNetwork:
         """
         Performs forward pass by sequentially applying each layer's transformation.
         """
+        if not isinstance(input_data, MLArray):
+            raise TypeError(f"Input data must be MLArray, not {type(input_data)}")
         for layer in self.layers:
             input_data = layer.forward(input_data)
         return input_data
 
-    def train(self, X, y, epochs, print_every=None):
+    def train(self, X, y, epochs, verbose=True, print_every=1):
         """
         Trains the network using gradient descent for the specified number of epochs.
         Prints loss every 100 epochs to monitor training progress.
         """
+        X, y = MLArray.ensure_array(X, y)
         losses = []
         for epoch in range(epochs):
             # Forward pass through the network
@@ -58,14 +62,12 @@ class NeuralNetwork:
                 layer.weights.restart()
                 layer.biases.restart()
                 
-            if print_every == None:
-                print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.data}")
-            else:
+            if verbose:
                 # Print training progress
                 if (epoch+1) % print_every == 0:
                     print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.data}")
 
-            return losses
+        return losses
 
 def example_neural_network():
     # Example usage
@@ -80,13 +82,13 @@ def example_neural_network():
     ], losses.mse_loss, optimizers.AdaGrad(learning_rate=0.1))
 
     # Generate some dummy data
-    X = MLArray([[0, 0], [0, 1], [1, 0], [1, 1]])
-    y = MLArray([[0], [1], [1], [0]])
+    X = [[0, 0], [0, 1], [1, 0], [1, 1]]
+    y = [[0], [1], [1], [0]]
 
     # Train the network
     nn.train(X, y, epochs=100)
 
-    y_pred = nn.forward(X)
+    y_pred = nn.forward(MLArray(X))
     print(y_pred)
 
 if __name__ == '__main__':

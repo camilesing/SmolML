@@ -21,8 +21,7 @@ from .losses import (
     mae_loss,
     binary_cross_entropy,
     categorical_cross_entropy,
-    huber_loss,
-    log_cosh_loss
+    huber_loss
 )
 
 from .optimizers import (

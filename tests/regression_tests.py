@@ -10,6 +10,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 import smolml.utils.initializers as initializers
+import smolml.utils.optimizers as optimizers
 import smolml.utils.losses as losses
 from smolml.models.regression import LinearRegression, PolynomialRegression
 
@@ -27,8 +28,10 @@ class TestRegressionVisualization(unittest.TestCase):
         
         # Training parameters
         self.iterations = 100
-        self.learning_rate = 0.1
-        self.epochs_to_store = [0, 5, 10, 25, 50, 100]
+        self.epochs_to_store = [0, 5, 10, 25, 50, 99]
+        
+        # Initialize optimizer
+        self.optimizer = optimizers.SGD(learning_rate=0.1)
         
         # Set plotting style
         plt.rcParams['font.family'] = 'sans-serif'
@@ -58,25 +61,20 @@ class TestRegressionVisualization(unittest.TestCase):
         """Train model and create interactive visualization"""
         # Store predictions history
         predictions_history = []
+        losses_history = []
         
-        # Training loop
-        for i in range(self.iterations):
-            y_pred = model.predict(X)
-            loss = losses.mse_loss(y, y_pred)
-            loss.backward()
-            model.update_parameters()
-            
-            # Reset gradients
-            X = X.restart()
-            y = y.restart()
-            model.weights = model.weights.restart()
-            model.bias = model.bias.restart()
-            
-            if i in self.epochs_to_store:
-                predictions_history.append(y_pred.to_list())
-            
-            if (i+1) % 10 == 0:
-                print(f"Epoch {i + 1}/{self.iterations}, Loss: {loss.data}")
+        # Initial prediction for storage
+        y_pred = model.predict(X)
+        predictions_history.append(y_pred.to_list())
+        
+        # Training loop using model's fit method
+        losses = model.fit(X, y, iterations=self.iterations, verbose=True, print_every=10)
+        
+        # Store predictions at specified epochs
+        X_eval = X.restart()  # Create fresh copy for evaluation
+        for epoch in self.epochs_to_store[1:]:  # Skip 0 as we already stored it
+            y_pred = model.predict(X_eval)
+            predictions_history.append(y_pred.to_list())
         
         # Convert to numpy for plotting
         X_np = np.array(X.to_list())
@@ -131,16 +129,19 @@ class TestRegressionVisualization(unittest.TestCase):
         print("Weights:", model.weights.data)
         print("Bias:", model.bias.data)
         
-        return predictions_history, loss.data
+        return predictions_history, losses[-1]
 
     def test_linear_regression(self):
         """Test linear regression with visualization"""
         print("\nTesting Linear Regression...")
         X, y = self.generate_linear_data()
         
-        model = LinearRegression(iterations=self.iterations, 
-                               learning_rate=self.learning_rate)
-        model.initialize_weights(1, initializers.XavierNormal())
+        model = LinearRegression(
+            input_size=1,
+            loss_function=losses.mse_loss,
+            optimizer=self.optimizer,
+            initializer=initializers.XavierUniform()
+        )
         
         predictions, final_loss = self.train_and_visualize(
             model, X, y, 'Linear Regression: Data vs Predictions'
@@ -156,10 +157,13 @@ class TestRegressionVisualization(unittest.TestCase):
         print("\nTesting Polynomial Regression...")
         X, y = self.generate_nonlinear_data()
         
-        model = PolynomialRegression(degree=2, 
-                                   iterations=self.iterations,
-                                   learning_rate=self.learning_rate)
-        model.initialize_weights(2, initializers.XavierNormal())
+        model = PolynomialRegression(
+            input_size=1,
+            degree=2,
+            loss_function=losses.mse_loss,
+            optimizer=self.optimizer,
+            initializer=initializers.XavierUniform()
+        )
         
         predictions, final_loss = self.train_and_visualize(
             model, X, y, 'Polynomial Regression: Data vs Predictions'

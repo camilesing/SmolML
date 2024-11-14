@@ -19,7 +19,7 @@ class MLArray:
     ///////////////
     """
 
-    def __init__(self, data, ml_array_id = None) -> None:
+    def __init__(self, data) -> None:
         """
         Creates a new MLArray given some data (scalar, 1D -using a python list-, or >=2D -using nested lists-)
         """
@@ -406,6 +406,52 @@ class MLArray:
         return self
     
     @staticmethod
+    def ensure_array(*args):
+        """
+        Converts any number of arguments into MLArrays if they aren't already.
+        """
+        def _convert_single_arg(arg):
+            # If already MLArray, return as is
+            if isinstance(arg, MLArray):
+                return arg
+                
+            # If numpy array, convert to list first 
+            if str(type(arg).__module__) == 'numpy':
+                arg = arg.tolist()
+                
+            # Handle different input types
+            if isinstance(arg, (int, float)):
+                return MLArray([arg])
+            elif isinstance(arg, list):
+                # Check if the list contains only numbers
+                def is_numeric_list(lst):
+                    for item in lst:
+                        if isinstance(item, list):
+                            if not is_numeric_list(item):
+                                return False
+                        elif not isinstance(item, (int, float)):
+                            return False
+                    return True
+                
+                if is_numeric_list(arg):
+                    return MLArray(arg)
+                else:
+                    raise TypeError(f"List contains non-numeric values: {type(arg)}")
+            else:
+                raise TypeError(f"Cannot convert type {type(arg)} to MLArray")
+        
+        # Convert each argument
+        converted = []
+        for i, arg in enumerate(args):
+            try:
+                converted.append(_convert_single_arg(arg))
+            except Exception as e:
+                raise TypeError(f"Error converting argument {i}: {str(e)}")
+        
+        # Return tuple of converted arrays
+        return tuple(converted) if len(converted) > 1 else converted[0]
+    
+    @staticmethod
     def _broadcast_shapes(shape1, shape2):
         """
         Returns the resulting broadcasted shape given two input shapes. Accepts multi-dimensionality.
@@ -474,7 +520,7 @@ class MLArray:
         Helper function to apply functions element-wise to n-dimensional MLArray
         """
         if len(self.shape) == 0:  # scalar
-            return MLArray(fn(x.data))
+            return MLArray(fn(self.data))
         
         def apply_recursive(data):
             if isinstance(data, list):
