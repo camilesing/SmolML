@@ -142,7 +142,8 @@ class TestRegressionVisualization(unittest.TestCase):
             optimizer=self.optimizer,
             initializer=initializers.XavierUniform()
         )
-        
+
+        print(model)
         predictions, final_loss = self.train_and_visualize(
             model, X, y, 'Linear Regression: Data vs Predictions'
         )
@@ -164,7 +165,8 @@ class TestRegressionVisualization(unittest.TestCase):
             optimizer=self.optimizer,
             initializer=initializers.XavierUniform()
         )
-        
+
+        print(model)
         predictions, final_loss = self.train_and_visualize(
             model, X, y, 'Polynomial Regression: Data vs Predictions'
         )

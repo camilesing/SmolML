@@ -1,5 +1,5 @@
 from smolml.core.ml_array import MLArray
-import random
+import smolml.utils.memory as memory
 from collections import Counter
 import math
 
@@ -20,6 +20,11 @@ class DecisionNode:
         self.left = left               # Left subtree (feature <= threshold)
         self.right = right             # Right subtree (feature > threshold)
         self.value = value             # Prediction value (for leaf nodes)
+
+    def __repr__(self):
+        if self.value is not None:
+            return f"Leaf(value={self.value})"
+        return f"Node(feature={self.feature_idx}, threshold={self.threshold:.4f})"
 
 class DecisionTree:
     """
@@ -218,3 +223,54 @@ class DecisionTree:
         if x[node.feature_idx] <= node.threshold:
             return self._traverse_tree(x, node.left)
         return self._traverse_tree(x, node.right)
+    
+    def __repr__(self):
+        """
+        Returns string representation of decision tree with structure and memory information.
+        """
+        try:
+            import os
+            terminal_width = os.get_terminal_size().columns
+        except Exception:
+            terminal_width = 80
+            
+        header = f"Decision Tree ({self.task.title()})"
+        separator = "=" * terminal_width
+        
+        # Get size information
+        size_info = memory.calculate_decision_tree_size(self)
+        
+        # Model parameters
+        params = [
+            f"Max Depth: {self.max_depth if self.max_depth is not None else 'None'}",
+            f"Min Samples Split: {self.min_samples_split}",
+            f"Min Samples Leaf: {self.min_samples_leaf}",
+            f"Task: {self.task}"
+        ]
+        
+        # Tree structure information
+        if self.root:
+            structure_info = [
+                "Tree Structure:",
+                f"  Internal Nodes: {size_info['tree_structure']['internal_nodes']}",
+                f"  Leaf Nodes: {size_info['tree_structure']['leaf_nodes']}",
+                f"  Max Depth: {size_info['tree_structure']['max_depth']}",
+                f"  Total Nodes: {size_info['tree_structure']['internal_nodes'] + size_info['tree_structure']['leaf_nodes']}"
+            ]
+        else:
+            structure_info = ["Tree not yet trained"]
+        
+        # Memory usage
+        memory_info = ["Memory Usage:"]
+        memory_info.append(f"  Base Tree: {memory.format_size(size_info['base_size'])}")
+        if self.root:
+            memory_info.append(f"  Tree Structure: {memory.format_size(size_info['tree_structure']['total'])}")
+        memory_info.append(f"Total Memory: {memory.format_size(size_info['total'])}")
+        
+        return (
+            f"\n{header}\n{separator}\n\n"
+            + "Parameters:\n" + "\n".join(f"  {param}" for param in params)
+            + "\n\n" + "\n".join(structure_info)
+            + "\n\n" + "\n".join(memory_info)
+            + f"\n{separator}\n"
+        )

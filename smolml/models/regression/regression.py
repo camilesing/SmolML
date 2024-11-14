@@ -1,8 +1,10 @@
+import sys
 import smolml.utils.initializers as initializers
 import smolml.utils.optimizers as optimizers
 from smolml.core.ml_array import MLArray
 import smolml.core.ml_array as ml_array
 import smolml.utils.losses as losses
+import smolml.utils.memory as memory
 
 """
 //////////////////
@@ -70,6 +72,61 @@ class Regression:
         Must be implemented by specific regression classes.
         """
         raise NotImplementedError("Regression is only base class for Regression algorithms, use one of the classes that inherit from it.")
+    
+    def __repr__(self):
+        """
+        Returns a string representation of the regression model.
+        Includes model type, parameters, optimizer details, and memory usage.
+        """
+        try:
+            import os
+            terminal_width = os.get_terminal_size().columns
+        except Exception:
+            terminal_width = 80
+
+        # Create header
+        header = f"{self.__class__.__name__} Model"
+        separator = "=" * terminal_width
+        
+        # Get size information
+        size_info = memory.calculate_regression_size(self)
+        
+        # Model structure
+        structure_info = [
+            f"Input Size: {self.input_size}",
+            f"Loss Function: {self.loss_function.__name__}",
+            f"Optimizer: {self.optimizer.__class__.__name__}(learning_rate={self.optimizer.learning_rate})"
+        ]
+        
+        # Parameters count
+        total_params = self.weights.size() + self.bias.size()
+        
+        # Memory breakdown
+        memory_info = ["Memory Usage:"]
+        memory_info.append(
+            f"  Parameters: {memory.format_size(size_info['parameters']['total'])} "
+            f"(weights: {memory.format_size(size_info['parameters']['weights_size'])}, "
+            f"bias: {memory.format_size(size_info['parameters']['bias_size'])})"
+        )
+        
+        # Add optimizer state information if it exists
+        if size_info['optimizer']['state']:
+            opt_size = sum(size_info['optimizer']['state'].values())
+            memory_info.append(f"  Optimizer State: {memory.format_size(opt_size)}")
+            for key, value in size_info['optimizer']['state'].items():
+                memory_info.append(f"    {key}: {memory.format_size(value)}")
+        
+        memory_info.append(f"  Base Objects: {memory.format_size(size_info['optimizer']['size'])}")
+        memory_info.append(f"Total Memory: {memory.format_size(size_info['total'])}")
+        
+        # Combine all parts
+        return (
+            f"\n{header}\n{separator}\n\n"
+            + "\n".join(structure_info)
+            + f"\n\nTotal Parameters: {total_params:,}\n\n"
+            + "\n".join(memory_info)
+            + f"\n{separator}\n"
+        )
 
 class LinearRegression(Regression):
    """
@@ -140,3 +197,57 @@ class PolynomialRegression(Regression):
        """
        X_poly = self.transform_features(X)
        return super().fit(X_poly, y, iterations, verbose, print_every)
+   
+   def __repr__(self):
+        """
+        Enhanced repr for polynomial regression including degree information.
+        """
+        try:
+            import os
+            terminal_width = os.get_terminal_size().columns
+        except Exception:
+            terminal_width = 80
+
+        # Create header
+        header = "Polynomial Regression Model"
+        separator = "=" * terminal_width
+        
+        # Get size information
+        size_info = memory.calculate_regression_size(self)
+        
+        # Model structure
+        structure_info = [
+            f"Original Input Size: {self.input_size}",
+            f"Polynomial Degree: {self.degree}",
+            f"Loss Function: {self.loss_function.__name__}",
+            f"Optimizer: {self.optimizer.__class__.__name__}(learning_rate={self.optimizer.learning_rate})"
+        ]
+        
+        # Parameters count
+        total_params = self.weights.size() + self.bias.size()
+        
+        # Memory breakdown
+        memory_info = ["Memory Usage:"]
+        memory_info.append(
+            f"  Parameters: {memory.format_size(size_info['parameters']['total'])} "
+            f"(weights: {memory.format_size(size_info['parameters']['weights_size'])}, "
+            f"bias: {memory.format_size(size_info['parameters']['bias_size'])})"
+        )
+        
+        if size_info['optimizer']['state']:
+            opt_size = sum(size_info['optimizer']['state'].values())
+            memory_info.append(f"  Optimizer State: {memory.format_size(opt_size)}")
+            for key, value in size_info['optimizer']['state'].items():
+                memory_info.append(f"    {key}: {memory.format_size(value)}")
+        
+        memory_info.append(f"  Base Objects: {memory.format_size(size_info['optimizer']['size'])}")
+        memory_info.append(f"Total Memory: {memory.format_size(size_info['total'])}")
+        
+        # Combine all parts
+        return (
+            f"\n{header}\n{separator}\n\n"
+            + "\n".join(structure_info)
+            + f"\n\nTotal Parameters: {total_params:,}\n\n"
+            + "\n".join(memory_info)
+            + f"\n{separator}\n"
+        )

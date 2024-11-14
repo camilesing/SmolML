@@ -32,6 +32,8 @@ from .optimizers import (
     Adam
 )
 
+from .memory import (format_size, calculate_value_size, calculate_mlarray_size, calculate_neural_network_size)
+
 __all__ = [
     # Activation functions
     'relu',
@@ -61,5 +63,11 @@ __all__ = [
     'SGD',
     'SGDMomentum',
     'AdaGrad',
-    'Adam'
+    'Adam',
+
+    # Memory
+    'format_size',
+    'calculate_value_size',
+    'calculate_mlarray_size',
+    'calculate_neural_network_size'
 ]

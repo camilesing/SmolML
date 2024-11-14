@@ -118,6 +118,7 @@ class TestDecisionTree(unittest.TestCase):
         # Create and train tree
         clf = DecisionTree(max_depth=10, min_samples_split=5, task="classification")
         clf.fit(MLArray(X_train_list), MLArray(y_train_list))
+        print(clf)
         
         # Make predictions
         y_pred = clf.predict(MLArray(X_test_list))
@@ -155,6 +156,7 @@ class TestDecisionTree(unittest.TestCase):
         # Create and train tree
         reg = DecisionTree(max_depth=5, min_samples_split=5, task="regression")
         reg.fit(MLArray(X_train_list), MLArray(y_train_list))
+        print(reg)
         
         # Make predictions
         y_pred = reg.predict(MLArray(X_test_list))

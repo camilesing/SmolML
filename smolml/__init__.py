@@ -25,6 +25,7 @@ from .utils.losses import (
 from .utils.optimizers import (
     Optimizer, SGD, SGDMomentum, AdaGrad, Adam
 )
+from .utils.memory import (format_size, calculate_value_size, calculate_mlarray_size, calculate_neural_network_size)
 
 # Version of the smolml package
 __version__ = '0.1.0'
@@ -78,5 +79,11 @@ __all__ = [
     'SGD',
     'SGDMomentum',
     'AdaGrad',
-    'Adam'
+    'Adam',
+
+    # Utils - Memory
+    'format_size',
+    'calculate_value_size',
+    'calculate_mlarray_size',
+    'calculate_neural_network_size'
 ]

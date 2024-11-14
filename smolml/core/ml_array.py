@@ -1,4 +1,4 @@
-from .value import Value
+from smolml.core.value import Value
 import random
 import math
 

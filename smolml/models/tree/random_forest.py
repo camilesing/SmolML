@@ -1,5 +1,6 @@
 from smolml.core.ml_array import MLArray
 import random
+import smolml.utils.memory as memory
 from collections import Counter
 from smolml.models.tree.decision_tree import DecisionTree
 
@@ -159,3 +160,69 @@ class RandomForest:
             raise Exception(f"Task in Random Forest not assigned to either 'classification' or 'regression'")
         
         return MLArray(final_predictions)
+    
+    def __repr__(self):
+        """
+        Returns string representation of random forest with structure and memory information.
+        """
+        try:
+            import os
+            terminal_width = os.get_terminal_size().columns
+        except Exception:
+            terminal_width = 80
+            
+        header = f"Random Forest ({self.task.title()})"
+        separator = "=" * terminal_width
+        
+        # Get size information
+        size_info = memory.calculate_random_forest_size(self)
+        
+        # Model parameters
+        params = [
+            f"Number of Trees: {self.n_trees}",
+            f"Max Features per Split: {self.max_features if self.max_features else 'auto'}",
+            f"Bootstrap Sampling: {self.bootstrap}",
+            f"Max Depth: {self.max_depth if self.max_depth else 'None'}",
+            f"Min Samples Split: {self.min_samples_split}",
+            f"Min Samples Leaf: {self.min_samples_leaf}",
+            f"Task: {self.task}"
+        ]
+        
+        # Forest structure information
+        if self.trees:
+            structure_info = [
+                "Forest Structure:",
+                f"  Trees Built: {len(self.trees)}",
+                f"  Average Tree Depth: {size_info['forest_stats']['avg_tree_depth']:.1f}",
+                f"  Average Nodes per Tree: {size_info['forest_stats']['avg_tree_nodes']:.1f}"
+            ]
+            
+            # Add sample stats from first tree if available
+            if self.trees:
+                first_tree_size = size_info['trees']['individual'][0]
+                structure_info.extend([
+                    "\nSample Tree Structure (First Tree):",
+                    f"  Internal Nodes: {first_tree_size['tree_structure']['internal_nodes']}",
+                    f"  Leaf Nodes: {first_tree_size['tree_structure']['leaf_nodes']}",
+                    f"  Max Depth: {first_tree_size['tree_structure']['max_depth']}"
+                ])
+        else:
+            structure_info = ["Forest not yet trained"]
+        
+        # Memory usage
+        memory_info = ["Memory Usage:"]
+        memory_info.append(f"  Base Forest: {memory.format_size(size_info['base_size'])}")
+        if self.trees:
+            memory_info.extend([
+                f"  All Trees: {memory.format_size(size_info['trees']['total'])}",
+                f"  Average per Tree: {memory.format_size(size_info['trees']['total'] / len(self.trees))}"
+            ])
+        memory_info.append(f"Total Memory: {memory.format_size(size_info['total'])}")
+        
+        return (
+            f"\n{header}\n{separator}\n\n"
+            + "Parameters:\n" + "\n".join(f"  {param}" for param in params)
+            + "\n\n" + "\n".join(structure_info)
+            + "\n\n" + "\n".join(memory_info)
+            + f"\n{separator}\n"
+        )

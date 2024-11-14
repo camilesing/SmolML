@@ -66,6 +66,8 @@ class TestRandomForest(unittest.TestCase):
             
             # Train forest
             rf.fit(self.X_train, self.y_train)
+
+            print(rf)
             
             # Make predictions
             y_pred = rf.predict(self.X_test)
