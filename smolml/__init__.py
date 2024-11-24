@@ -7,6 +7,7 @@ from .core import MLArray, Value
 from .models.nn import DenseLayer, NeuralNetwork
 from .models.regression import LinearRegression, PolynomialRegression
 from .models.tree import DecisionTree, RandomForest
+from .models.unsupervised import KMeans
 
 # Import preprocessing
 from .preprocessing import StandardScaler, MinMaxScaler
@@ -46,6 +47,9 @@ __all__ = [
     # Models - Tree-based
     'DecisionTree',
     'RandomForest',
+
+    # Models - Unsupervised
+    'KMeans',
     
     # Preprocessing
     'StandardScaler',
