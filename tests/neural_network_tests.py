@@ -31,7 +31,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
         tf.random.set_seed(42)
         
         # Generate moon dataset
-        X, y = make_moons(n_samples=200, noise=0.1)
+        X, y = make_moons(n_samples=100, noise=0.1)
         self.scaler = StandardScaler()
         X = self.scaler.fit_transform(X)
         
@@ -48,10 +48,10 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
         
         # Model parameters
         self.input_size = 2
-        self.hidden_size = 64
+        self.hidden_size = 32
         self.output_size = 1
-        self.epochs = 50
-        self.learning_rate = 0.25
+        self.epochs = 100
+        self.learning_rate = 0.05
         
         # Initialize models
         self.custom_model = self._create_custom_model()
@@ -129,7 +129,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
             self.X_train, self.y_train,
             epochs=self.epochs,
             batch_size=len(self.X_train),
-            verbose=0
+            verbose=1
         )
         
         # Plot training curves

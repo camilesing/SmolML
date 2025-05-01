@@ -342,6 +342,7 @@ class MLArray:
         """
         if isinstance(data, Value):
             data.grad = 0
+            data.prev = ()
         elif isinstance(data, list):
             for item in data:
                 self._restart_data(item)
