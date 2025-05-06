@@ -1,6 +1,6 @@
 # SmolML - Tree Models: Decisions, Decisions!
 
-Welcome to the branch of SmolML dealing with **Tree-Based Models**! Unlike the models we saw in **Regression** (which rely on smooth equations and gradient descent), Decision Trees and their powerful sibling, Random Forests, make predictions by learning a series of explicit **decision rules** from the data. Think of it like building a sophisticated flowchart to classify an email as spam or not spam, or to predict a house price.
+Welcome to the *branch* of SmolML dealing with **Tree-Based Models**! Unlike the models we saw in **Regression** (which rely on smooth equations and gradient descent), Decision Trees and their powerful sibling, Random Forests, make predictions by learning a series of explicit **decision rules** from the data. Think of it like building a sophisticated flowchart to classify an email as spam or not spam, or to predict a house price.
 
 These models are incredibly versatile, handling both **classification** (predicting categories) and **regression** (predicting numerical values) tasks. They don't need feature scaling and can capture complex, non-linear relationships. Let's dive into how they work!
 

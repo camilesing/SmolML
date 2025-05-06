@@ -6,7 +6,7 @@ This part of SmolML focuses on handling this data and calculating gradients auto
 
 ## Why Do We Need Gradients Anyway?
 
-Think about teaching a computer to recognize a cat in a photo. The computer makes a prediction based on its current internal settings (parameters or weights). Initially, these settings are random, so the prediction is likely wrong. We measure *how wrong* using a "loss function" – a lower loss means a better prediction.
+Think about teaching a computer to recognize a cat in a photo. The computer makes a prediction based on its current internal settings (parameters or weights). Initially, these settings are random, so the prediction is likely wrong. We measure *how wrong* using a "loss function" (we have those in `smolml\utils\losses.py`, explained in another section) – a lower loss means a better prediction.
 
 The goal is to adjust the computer's parameters to *minimize* this loss. But how do we know *which way* to adjust each parameter? Should we increase it? Decrease it? By how much?
 
@@ -73,6 +73,8 @@ After calling `.backward()`, `a.grad`, `b.grad`, and `c.grad` hold the gradients
 
 ## Handling N-Dimensional Arrays of Values with `MLArray`
 
+> **IMPORTANT NOTE**: `MLArray` is by far the most complex class of the library. If you are implementing this library by yourself while following along, I recommend just copying the provided `mlarray.py` for now, and make your own implementation at the end, as making it from scratch will probably take you a lot of time (and headaches!).
+
 While `Value` objects handle the core AutoDiff for single numbers, machine learning thrives on vectors, matrices, and higher-dimensional tensors. We need an efficient way to manage collections of these smart Value objects. This is the job of the MLArray class.
 
 What is an `MLArray`?
@@ -90,7 +92,7 @@ This ensures that any calculations performed using the `MLArray` will automatica
 
 **Operations on Arrays**
 
-`MLArray` supports many standard numerical operations, designed to work seamlessly with the underlying `Value` objects:
+The idea of `MLArray` is to support many standard numerical operations, designed to work seamlessly with the underlying `Value` objects:
 
 - **Element-wise operations**: `+`, `-`, `*`, `/`, `**` (power), `exp()`, `log()`, `tanh()`, etc.. When you add two `MLArray`s, the library iterates through corresponding elements and performs the `Value.__add__` (or the corresponding operation, like `__mul__` for multiplication, and so on) operation on each pair (handled by `_element_wise_operation`). This builds the graph element by element.
 - **Matrix Multiplication**: `matmul()` or the `@` operator. This performs the dot product logic, correctly combining the underlying `Value` multiplications and additions to construct the appropriate graph structure.

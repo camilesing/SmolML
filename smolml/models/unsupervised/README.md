@@ -4,7 +4,7 @@ So far, we've looked at models that learn from labeled data (**supervised learni
 
 Imagine you have data points scattered on a graph. K-Means tries to automatically group these points into a specified number (`k`) of clusters, without any prior knowledge of what those groups should be. It's like trying to find natural groupings of customers based on their purchasing behavior, or grouping stars based on their brightness and temperature.
 
-This part of SmolML implements the K-Means algorithm using our trusty `MLArray` for efficient calculations. Let's see how it works!
+This part of SmolML implements the K-Means algorithm using our trusty `MLArray` class. Let's see how it works!
 
 ## The K-Means Algorithm: A Cluster Dance!
 

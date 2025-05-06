@@ -102,6 +102,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
         """
         Train and compare both models
         """
+        print("IMPORTANT: SmolML implementation of NNs is very inefficient due to being written in Python. Running this in a low-hardware machine might take a long time.")
         # Train custom model
         print("\nTraining custom model...")
         custom_history = []
@@ -135,6 +136,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
         # Plot training curves
         plt.figure(figsize=(12, 4))
 
+        print("\n Plotting training loss...")
         # Plot 1: Training Loss
         plt.subplot(1, 2, 1)
         plt.plot(range(self.epochs), custom_history, label='Custom NN')  # Changed this line
@@ -147,6 +149,7 @@ class TestNeuralNetworkVsTensorflow(unittest.TestCase):
         # Plot 2: Decision Boundaries
         plt.subplot(1, 2, 2)
         
+        print("\n Plotting decision boundaries...")
         # Plot decision boundaries
         xx, yy, Z_custom = self._plot_decision_boundary(self.custom_model)
         plt.contourf(xx, yy, Z_custom > 0.5, alpha=0.4)

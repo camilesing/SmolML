@@ -1,6 +1,6 @@
 # SmolML - Regression: Predicting Continuous Values
 
-Building upon the core concepts of automatic differentiation (`Value`) and N-dimensional arrays (`MLArray`) explained in the SmolML Core, we can now implement various machine learning models. This section focuses on **regression models**, which are used to predict continuous numerical outputs. Think predicting house prices, stock values, or temperature based on input features.
+Building upon the core concepts of automatic differentiation (`Value`) and N-dimensional arrays (`MLArray`) explained in the SmolML Core, we can now implement various machine learning models. This section focuses on **regression models**, which are used to predict continuous numerical outputs. Think of predicting house prices, stock values, or temperature based on input features.
 
 While deep neural networks offer immense power, simpler models like Linear Regression or its extension, Polynomial Regression, are often excellent starting points, computationally efficient, and highly interpretable. They share the same fundamental learning principle as complex networks: minimizing a loss function by adjusting parameters using gradient descent, all powered by our automatic differentiation engine using the `Value` class.
 
@@ -19,13 +19,13 @@ This iterative process allows the regression model to "learn" the underlying rel
 
 ## The `Regression` Base Class: A Common Framework
 
-To streamline the implementation of different regression algorithms, SmolML provides a `Regression` base class (in `regression.py`). This class handles the common structure and the training loop logic. Specific models like `LinearRegression` inherit from it.
+To streamline the implementation of different regression algorithms, in SmolML we made a `Regression` base class (in `regression.py`). This class handles the common structure and the training loop logic. Specific models like `LinearRegression` inherit from it.
 
 Here's how it works:
 
 * **Initialization (`__init__`)**:
-    * Accepts the `input_size` (number of expected input features), a `loss_function` (defaulting to `losses.mse_loss`), an `optimizer` instance (defaulting to `optimizers.SGD`), and a weight `initializer` (defaulting to `initializers.XavierUniform`).
-    * Crucially, it initializes the model's trainable parameters:
+    * Accepts the `input_size` (number of expected input features), a `loss_function`, an `optimizer` instance, and a weight `initializer`.
+    * Crucially, it initializes the model's **trainable parameters**:
         * `self.weights`: An `MLArray` holding the coefficients for each input feature. Its shape is determined by `input_size`, and values are set by the `initializer`.
         * `self.bias`: A scalar `MLArray` (initialized to 1) representing the intercept term.
     * Because `weights` and `bias` are `MLArray`s, they inherently contain `Value` objects. This ensures they are part of the computational graph and their gradients can be automatically computed during training.

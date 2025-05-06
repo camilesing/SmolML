@@ -1,4 +1,4 @@
-# SmolML - Neural Networks and Layers
+# SmolML - Neural Networks: Backpropagation to the limit
 
 After defining our core components – `Value` for automatic differentiation and `MLArray` (see the 'core' section) for handling multi-dimensional data – we can start building actual models! This section covers how layers are defined and assembled into a trainable Neural Network.
 
