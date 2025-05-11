@@ -8,6 +8,10 @@ While deep neural networks offer immense power, simpler models like Linear Regre
 
 The goal in regression is to find a mathematical function that maps input features (like the square footage of a house) to a continuous output (like its price). This function has internal parameters (often called **weights** or coefficients, and a **bias** or intercept) that determine its exact shape.
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/79874cec-8650-4628-af1f-ca6fdc4debe5" width="600">
+</div>
+
 How do we find the *best* parameters?
 1.  **Prediction:** We start with initial (often random) parameters and use the model to make predictions on our training data.
 2.  **Loss Calculation:** We compare these predictions to the actual known values using a **loss function** (like Mean Squared Error - MSE). This function quantifies *how wrong* the model currently is. A lower loss is better.
@@ -48,6 +52,10 @@ Here's how it works:
     * Provides a nicely formatted string summary of the configured model, including its type, parameter shapes, optimizer, loss function, and estimated memory usage.
 
 ## Specific Models Implemented
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/8b282ca1-7c17-460d-a64c-61b0624627f9" width="600">
+</div>
 
 ### `LinearRegression`
 
