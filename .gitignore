@@ -3,3 +3,4 @@ venv
 *.png
 SmolML.egg-info
 build
+.venv
