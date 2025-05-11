@@ -1,74 +1,140 @@
 # SmolML - Neural Networks: Backpropagation to the limit
 
-After defining our core components – `Value` for automatic differentiation and `MLArray` (see the 'core' section) for handling multi-dimensional data – we can start building actual models! This section covers how layers are defined and assembled into a trainable Neural Network.
+Welcome to the neural network section of SmolML! Having established our Value objects for automatic differentiation and MLArray for handling data (see 'core' section), we can now build models that learn. This guide will walk you through the fundamental concepts, from a single neuron to a fully trainable neural network, and how they're represented in SmolML.
 
-## Building Blocks - The `DenseLayer`
+> **IMPORTANT**: As our implementation is made fully in Python, handling the automatic differentiation of an entire neural network is very computationally expensive. If you plan on running an example, we recommend starting with a very small network and then escalate. Creating a too big neural network for your computer might make it freeze 🙂 
 
-Neural networks are often visualized as interconnected nodes arranged in layers. Data flows from one layer to the next, undergoing transformations at each step. The most fundamental type of layer is often called a "Dense" or "Fully Connected" layer.
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/e5315fca-5dd6-4c9c-9cf3-bf46edfbb40c" width="600">
+</div>
 
-**What does a Dense Layer do?**
+## The Neuron: A Tiny Decision Maker
 
-Conceptually, a dense layer takes an input vector (or a batch of input vectors) and performs two main steps:
-1.  **Linear Transformation:** It multiplies the input by a weight matrix (`W`) and adds a bias vector (`b`). Mathematically: $z = \text{input} \times W + b$. The weights and biases are the layer's **learnable parameters**. They start with initial values and are adjusted during training.
-2.  **Activation Function:** It applies a non-linear function (like ReLU, Tanh, Sigmoid, or just a simple linear "pass-through") to the result ($z$) of the linear transformation. This non-linearity is crucial; without it, stacking multiple layers would be mathematically equivalent to just a single layer.
+At the heart of a neural network is the neuron (or node). Think of it as a small computational unit that receives several inputs, processes them, and produces a single output.
 
-**The `DenseLayer` Class (`layer.py`)**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/2f95fdfe-1676-4a0b-9e10-95ecdf9155b6" width="600">
+</div>
 
-Our library implements this concept in the `DenseLayer` class.
+Here's what a neuron conceptually does:
 
-* **Initialization (`__init__`)**:
-    * When you create a `DenseLayer`, you specify the number of input features (`input_size`) and the number of output features (`output_size`).
-    * It automatically creates the `weights` and `biases` needed for the linear transformation. These are initialized as `MLArray` objects, meaning they are ready for automatic differentiation!
-        * `self.weights`: An `MLArray` of shape `(input_size, output_size)`. It's typically initialized using strategies like Xavier or He initialization (provided via `weight_initializer`, defaulting to `initializers.XavierUniform`) to help with training stability.
-        * `self.biases`: An `MLArray` of shape `(1, output_size)`, usually initialized to zeros (`zeros(1, output_size)`). It gets broadcasted during addition.
-    * You also specify the `activation_function` (like `activation.relu` or `activation.tanh`) to be applied after the linear step.
+- **Weighted Sum**: Each input connection to the neuron has an associated weight. The neuron multiplies each input value by its corresponding weight. These weights are crucial – they are what the network learns by adjusting during training, determining the influence of each input.
+- **Bias**: The neuron then adds a bias term to this weighted sum. The bias allows the neuron to shift its output up or down, independent of its inputs. This helps the network fit data that doesn't necessarily pass through the origin.
+- **Activation Function**: Finally, the result of the weighted sum + bias is passed through an activation function. This function introduces non-linearity, which is vital. Without non-linearity, a stack of multiple layers would behave just like a single layer, limiting the network's ability to learn complex patterns. Common activation functions include ReLU, Tanh, and Sigmoid.
 
-* **Forward Pass (`forward`)**:
-    * The `.forward(input_data)` method defines the layer's core computation.
-    * It takes an `input_data` (`MLArray`) and performs the calculation: `z = input_data @ self.weights + self.biases`. Notice the use of `@` for matrix multiplication and `+` for addition – these are `MLArray` operations that build our computational graph using the underlying `Value` objects.
-    * Finally, it applies the chosen `self.activation_function` to `z` and returns the result (`MLArray`).
+While SmolML doesn't have a standalone Neuron class for this section (as it's often more efficient to work with layers directly), the logic of many such neurons operating in parallel is encapsulated within our DenseLayer. Each output feature of a DenseLayer can be thought of as the output of one such conceptual neuron.
 
-* **Parameter Update (`update`)**:
-    * This method is a helper used during training. It doesn't perform calculations itself but interacts with an `optimizer` object (which we'll see in the `NeuralNetwork` class) to adjust the layer's `self.weights` and `self.biases` based on the computed gradients.
+## Layers: Organizing Neurons
 
-## Assembling Layers - The `NeuralNetwork`
+A single neuron isn't very powerful on its own. Neural networks organize neurons into layers. The most common type is a Dense Layer (also known as a Fully Connected Layer).
 
-A single layer isn't usually enough for complex tasks. A neural network typically consists of multiple layers stacked sequentially. The output of one layer becomes the input to the next.
+What does a Dense Layer do?
 
-**The `NeuralNetwork` Class (`neural_network.py`)**
+In a dense layer, every neuron in the layer receives input from every neuron in the previous layer (or from the raw input data if it's the first layer).
 
-This class manages a sequence of layers and orchestrates the training process.
+Conceptually, a dense layer performs two main steps, building on the neuron's logic:
 
-* **Initialization (`__init__`)**:
-    * You create a `NeuralNetwork` by providing a list of layer objects (e.g., `[DenseLayer(...), DenseLayer(...)]`), a `loss_function` (like `losses.mse_loss` for regression), and an `optimizer` (like `optimizers.SGD` or `optimizers.AdaGrad`).
-    * The `optimizer` holds the logic for *how* to update the parameters based on gradients (e.g., simple gradient descent, or more advanced methods).
+1. **Linear Transformation**: It takes an input vector (or a batch of input vectors) and performs a matrix multiplication with a weight matrix (`W`) and adds a bias vector (`b`).
+   - Each row in the input vector connects to each column in the weight matrix. If you have input_size features and want output_size features from this layer (i.e., output_size conceptual neurons), the weight matrix `W` will have a shape of (input_size, output_size). Each element $W_ij$ is the weight connecting the i-th input feature to the j-th neuron in the layer.
+   - The bias vector b will have output_size elements, one for each neuron.
+   - Mathematically: $z=input×W+b$.
+   - In SmolML, when you create a DenseLayer (from `layer.py`), you specify input_size and output_size. The layer then initializes self.weights (our `W`) and self.biases (our `b`) as `MLArray` objects. These are the learnable parameters of the layer.
 
-* **Forward Pass (`forward`)**:
-    * The network's `.forward(input_data)` method implements the feedforward process.
-    * It takes the initial `input_data` and passes it through the first layer in `self.layers`.
-    * The output of that layer is then fed as input to the second layer, and so on, until the data has passed through all layers.
-    * The final output of the last layer is returned. Because each layer's forward pass builds a computational graph, the network's forward pass chains these graphs together.
+```python
+# From layer.py
+class DenseLayer:
+    def __init__(self, input_size: int, output_size: int, ...):
+        self.weights = weight_initializer.initialize(input_size, output_size) # MLArray
+        self.biases = zeros(1, output_size) # MLArray
+        ...
+```
 
-* **Training (`train`)**:
-    * This is where the learning happens! The `.train(X, y, epochs, ...)` method implements the training loop. Here's a breakdown of one epoch (one pass through the entire dataset):
-        1.  **Forward Pass:** Calculate the network's predictions (`y_pred`) for the input data `X` by calling `self.forward(X)`. This builds the complete computational graph from input `X` to `y_pred`.
-        2.  **Compute Loss:** Use the specified `self.loss_function` to compare the predictions `y_pred` with the true target values `y`. This computes the loss, which is typically a single scalar `Value` (inside an `MLArray`). The loss function itself involves `Value`/`MLArray` operations, so it extends the computational graph. The `loss` variable now represents the final node of our graph for this iteration.
-        3.  **Backward Pass:** Call `loss.backward()`. This triggers the automatic differentiation process, calculating the gradient of the loss with respect to *every* `Value` object involved in the computation, all the way back to the weights and biases in *each layer*, and even the input `X` (though we usually don't need the gradients for `X`).
-        4.  **Update Parameters:** Iterate through each layer (`for idx, layer in enumerate(self.layers):`) and call `layer.update(self.optimizer, idx)`. The optimizer uses the gradients stored in `layer.weights.grad()` and `layer.biases.grad()` (which were populated by `loss.backward()`) along with its internal logic (e.g., learning rate) to compute updated values for the weights and biases.
-        5.  **Reset Gradients:** **Crucially**, gradients computed by `.backward()` are *added* to the existing `.grad` attributes. Before the next training iteration, we must reset the gradients for all parameters (and potentially inputs/targets if they are part of subsequent graphs) back to zero. This is done using the `.restart()` method on the relevant `MLArray`s (weights, biases, and sometimes X/y if they persist). If we didn't do this, gradients from previous iterations would incorrectly influence the updates in the current iteration.
-        6.  **Repeat:** Go back to step 1 for the next epoch.
+2. **Activation Function**: The result (`z`) of this linear transformation is then passed element-wise through a chosen non-linear activation function (e.g., ReLU, Tanh).
+   - This is applied to the output of each conceptual neuron in the layer.
+   - In SmolML, you specify the activation_function when creating a DenseLayer, and it's applied in the forward method:
 
-* **Representation (`__repr__`)**:
-    * Printing the `NeuralNetwork` object gives a nicely formatted summary including the layers, their shapes, activation functions, parameter counts, the chosen optimizer and loss function, and estimated memory usage.
+```python
+# From layer.py
+class DenseLayer:
+    ...
+    def forward(self, input_data):
+        z = input_data @ self.weights + self.biases # Linear transformation
+        return self.activation_function(z)      # Activation
+```
 
-## The Training Lifecycle
+The forward method essentially defines how data flows through the layer. Because `input_data`, `self.weights`, and `self.biases` are `MLArray`s (which use `Value` objects internally), all operations automatically build the computational graph needed for backpropagation.
 
-Putting it all together, training a neural network involves repeatedly cycling through these steps:
+## Neural Networks: Stacking Layers
 
-1.  **Feed Forward:** Pass the input data through the network layers to get a prediction. (`network.forward(X)`)
-2.  **Calculate Loss:** Compare the prediction to the true values using a loss function. (`loss = loss_fn(y_pred, y)`)
-3.  **Backpropagate:** Calculate the gradients of the loss with respect to all network parameters. (`loss.backward()`)
-4.  **Update Weights:** Adjust the network parameters using the optimizer based on the calculated gradients. (`optimizer` acts via `layer.update()`)
-5.  **Zero Gradients:** Reset all parameter gradients before the next iteration. (`params.restart()`)
+The true power of neural networks comes from stacking multiple layers. The output of one layer becomes the input to the next. This allows the network to learn hierarchical features – earlier layers might learn simple patterns (like edges in an image), while later layers combine these to learn more complex concepts (like shapes or objects).
 
-By using `DenseLayer` to define the transformations and `NeuralNetwork` to manage the sequence and the training loop, we can leverage the underlying `MLArray` and `Value` objects to build and train sophisticated models effectively.
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/3979a284-0b29-4110-b6c5-dfe1a13f50b9" width="600">
+</div>
+
+### The NeuralNetwork Class (neural_network.py)
+
+In SmolML, the `NeuralNetwork` class manages this sequence of layers and orchestrates the entire training process.
+
+- **Initialization (__init__)**:
+  - You create a NeuralNetwork by providing it with a list of layer objects (e.g., a sequence of DenseLayer instances), a loss_function (to measure how "wrong" the network's predictions are), and an optimizer (which defines how to update the layer parameters).
+
+```python
+# From neural_network.py
+class NeuralNetwork:
+    def __init__(self, layers: list, loss_function: callable, optimizer: optimizers.Optimizer = optimizers.SGD()):
+        self.layers = layers
+        self.loss_function = loss_function
+        self.optimizer = optimizer
+```
+
+- **Forward Pass (forward)**:
+  - The network's forward pass is straightforward: it takes the input data and passes it sequentially through each layer in its list. The output of layer i becomes the input to layer i+1.
+
+```python
+# From neural_network.py
+class NeuralNetwork:
+    ...
+    def forward(self, input_data):
+        for layer in self.layers: # Pass data through each layer
+            input_data = layer.forward(input_data)
+        return input_data # Final output of the network
+```
+
+This chained forward pass, because each layer's forward method uses MLArray operations, builds one large computational graph from the initial input all the way to the network's final prediction.
+
+## Teaching the Network: The Training Loop
+
+"Learning" in a neural network means adjusting the weights and biases in all its layers to make better predictions. This is achieved through a process called training, which typically involves the following steps repeated over many epochs (passes through the entire dataset):
+
+1. **Forward Pass**:
+   - Feed the input data (`X`) through the network using `network.forward(X)` to get predictions (`y_pred`). As we've seen, this also builds the computational graph.
+
+2. **Compute Loss**:
+   - Compare the network's predictions (`y_pred`) with the actual target values (`y`) using the specified loss_function (e.g., Mean Squared Error for regression, Cross-Entropy for classification).
+   - The loss is a single Value (often wrapped in an `MLArray`) that quantifies how badly the network performed on this batch of data. This loss `Value` is the final node of our current computational graph.
+
+3. **Backward Pass (Backpropagation)**:
+   - This is where the magic of our `Value` objects (from the 'core' section) shines! We call `loss.backward()`.
+   - This one command triggers the automatic differentiation process. It walks backwards through the entire computational graph (from the loss all the way back to every weight and bias in every `DenseLayer`, and even the input `X`) and calculates the gradient of the loss with respect to each of these `Value` objects. The `.grad` attribute of each `Value` (and thus each element in our `MLArray` parameters) is populated.
+   - This tells us how much a small change in each `weight` or `bias` would affect the overall loss.
+
+4. **Update Parameters**:
+   - Now that we know the "direction of steepest ascent" for the loss (the gradients), the optimizer steps in. It uses these gradients (and its own internal logic, like a learning rate) to adjust the weights and biases in each layer. The goal is to nudge them in the opposite direction of their gradients to reduce the loss.
+   - In SmolML, the `NeuralNetwork.train` method iterates through its layers and calls `layer.update(self.optimizer, ...)` for each. This method, in turn, uses the optimizer to modify layer.weights and layer.biases.
+
+5. **Reset Gradients**:
+   - The gradients calculated by `loss.backward()` are accumulated (added) to the `.grad` attribute of each `Value`. Before the next training iteration (the next forward/backward pass), it's absolutely crucial to reset these gradients back to zero.
+   - This is done using the `.restart()` method on the relevant `MLArray`s (all weights and biases in every layer, and sometimes X and y if they are part of persistent graphs). If we didn't do this, gradients from previous iterations would incorrectly influence the updates in the current iteration.
+   - You'll see this in `NeuralNetwork.train()`:
+
+```python
+# Inside NeuralNetwork.train() after parameter updates
+X.restart()
+y.restart()
+for layer in self.layers:
+    layer.weights.restart()
+    layer.biases.restart()
+```
+
+By repeatedly cycling through these steps, the NeuralNetwork gradually tunes its DenseLayer parameters, leveraging the automatic differentiation power of Value and MLArray to minimize the loss and "learn" from the data.
