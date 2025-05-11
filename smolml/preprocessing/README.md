@@ -13,11 +13,19 @@ Now, consider algorithms that use distances (like K-Means) or rely on gradient d
 * **Distance-Based Algorithms:** If you calculate the distance between two houses, a difference of 1000 sq ft will numerically dwarf a difference of 2 bedrooms, just because the *numbers* are bigger. The algorithm might mistakenly think `size_sqft` is vastly more important, solely due to its larger range.
 * **Gradient-Based Algorithms:** Features with vastly different scales can cause the optimization process (finding the best model weights) to be slow and unstable. Think of trying to find the bottom of a valley where one side is incredibly steep (large-range feature) and the other is very gentle (small-range feature) – it's tricky!
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/2930477a-a175-41b0-a802-bdaa5ff04bbc" width="600">
+</div>
+
 **The Goal:** Feature scaling brings all features onto a similar numerical playing field. This prevents features with larger values from dominating the learning process just because of their scale, often leading to faster training convergence and sometimes even better model performance.
 
 SmolML provides two common scalers, built using our `MLArray`.
 
 ## `StandardScaler`: Zero Mean, Unit Variance
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/dda0fe2b-5e9f-4fc2-a5c6-61db874e2d88" width="850">
+</div>
 
 This is one of the most popular scaling techniques, often called **Z-score normalization**.
 
@@ -44,6 +52,10 @@ It's a two-step process:
     * The result is your scaled data, ready for your model!
 
 ## `MinMaxScaler`: Squeezing into [0, 1]
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/f2153e47-bf00-482e-9784-567a462b96e1" width="850">
+</div>
 
 Another common technique, especially useful when you want features bounded within a specific range.
 
