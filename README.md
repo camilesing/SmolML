@@ -20,13 +20,13 @@ The goal isn't to compete with production-grade libraries on speed or features, 
 
 You can read these guides of the different sections of SmolML in any order, though this list presents the recommended order for learning.
 
-- [SmolML - Core: Automatic Differentiation & N-Dimensional Arrays](smolml\core\README.md)
-- [SmolML - Regression: Predicting Continuous Values](smolml\models\regression\README.md)
-- [SmolML - Neural Networks: Backpropagation to the limit](smolml\models\nn\README.md)
-- [SmolML - Tree Models: Decisions, Decisions!](smolml\models\tree\README.md)
-- [SmolML - K-Means: Finding Groups in Your Data!](smolml\models\unsupervised\README.md)
-- [SmolML - Preprocessing: Make your data meaningful](smolml\preprocessing\README.md)
-- [SmolML - The utility room!](smolml\utils\README.md)
+- [SmolML - Core: Automatic Differentiation & N-Dimensional Arrays](https://github.com/rodmarkun/SmolML/tree/main/smolml/core)
+- [SmolML - Regression: Predicting Continuous Values](https://github.com/rodmarkun/SmolML/tree/main/smolml/models/regression)
+- [SmolML - Neural Networks: Backpropagation to the limit](https://github.com/rodmarkun/SmolML/tree/main/smolml/models/nn)
+- [SmolML - Tree Models: Decisions, Decisions!](https://github.com/rodmarkun/SmolML/tree/main/smolml/models/tree)
+- [SmolML - K-Means: Finding Groups in Your Data!](https://github.com/rodmarkun/SmolML/tree/main/smolml/models/unsupervised)
+- [SmolML - Preprocessing: Make your data meaningful](https://github.com/rodmarkun/SmolML/tree/main/smolml/preprocessing)
+- [SmolML - The utility room!](https://github.com/rodmarkun/SmolML/tree/main/smolml/utils)
  
 ## Why SmolML? The Philosophy 🎓
 
