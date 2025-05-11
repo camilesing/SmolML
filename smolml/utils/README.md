@@ -67,6 +67,10 @@ Each activation function takes a numerical input (often the output of a linear l
 
 *(See `activation.py` for implementation details)*
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/c610f284-dbf2-4a69-8f88-5433a28276cb" width="600">
+</div>
+
 ---
 
 ## Weight Initializers (`initializers.py`)
@@ -106,6 +110,11 @@ They typically draw random numbers from specific probability distributions (like
 **What is a loss function?**
 
 During training, we need a way to measure how "wrong" our model's predictions are compared to the actual target values (ground truth). This measure is the **loss** (or cost, or error). The goal of training is to adjust the model's parameters (weights/biases) to **minimize** this loss value.
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/6fe8332d-904f-45f8-a2f6-9bca50ffd576" width="500">
+</div>
+
 
 **How they work:**
 
