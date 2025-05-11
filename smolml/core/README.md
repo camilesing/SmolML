@@ -10,7 +10,9 @@ Think about teaching a computer to recognize a cat in a photo. The computer make
 
 The goal is to adjust the computer's parameters to *minimize* this loss. But how do we know *which way* to adjust each parameter? Should we increase it? Decrease it? By how much?
 
-This is where **gradients** come in. The gradient of the loss function with respect to a specific parameter tells us the "slope" of the loss at that parameter's current value. It points in the direction of the *steepest increase* in the loss. So, if we want to *decrease* the loss, we nudge the parameter in the *opposite* direction of the gradient. The size of the gradient also tells us how sensitive the loss is to that parameter – a larger gradient suggests a bigger adjustment might be needed.
+![Figure-3-37-Gradient-descent-Algorithm-illustration(1)](https://github.com/user-attachments/assets/93e2df5b-5f02-43d1-a4b9-3e9daeb81a9a)
+
+This is where **gradients** come in. The gradient of the loss function with respect to a specific parameter tells us the "slope" of the loss at that parameter's current value. It points in the direction of the *steepest increase* in the loss. So, if we want to *decrease* the loss, we nudge the parameter in the *opposite* direction of the gradient (the purple arrow in the above image). The size of the gradient also tells us how sensitive the loss is to that parameter – a larger gradient suggests a bigger adjustment might be needed.
 
 Calculating these gradients for every parameter allows the model to iteratively improve, step-by-step, reducing its error. This process is the heart of training most ML models.
 
@@ -21,6 +23,10 @@ Okay, so we need gradients. For a simple function like $y = a \times b + c$, we 
 But modern neural networks are *vastly* more complex. They are essentially giant, nested mathematical functions with potentially millions of parameters. Calculating all those gradients manually is practically impossible and incredibly prone to errors.
 
 **Automatic Differentiation (AutoDiff)** is the solution. It's a technique where the computer itself keeps track of every single mathematical operation performed, building a computational graph. Then, by applying the chain rule systematically backwards through this graph (a process called **backpropagation**), it can efficiently compute the gradient of the final output (the loss) with respect to every single input and parameter involved.
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/75372083-69b3-47b4-959d-609d7f426751" width="600">
+</div>
 
 ## Implementing AutoDiff with `Value`
 
@@ -80,6 +86,10 @@ While `Value` objects handle the core AutoDiff for single numbers, machine learn
 What is an `MLArray`?
 
 Think of `MLArray` as an N-dimensional array (like NumPy arrays, but built from scratch here). It can be a list (1D), a list-of-lists (2D matrix), or nested deeper for higher dimensions.
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/29606bb9-fa55-457c-b2ac-120596aebc11" width="600">
+</div>
 
 The crucial difference from a standard Python list is that every number you put into an MLArray is automatically converted into a `Value` object. This happens recursively in the `_process_data` method during initialization.
 
