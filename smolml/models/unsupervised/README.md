@@ -8,6 +8,10 @@ This part of SmolML implements the K-Means algorithm using our trusty `MLArray` 
 
 ## The K-Means Algorithm: A Cluster Dance!
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/1d85e199-e5d1-4ff0-a70b-e1d8ab970e13" width="600">
+</div>
+
 K-Means aims to partition your data into `k` distinct, non-overlapping clusters. It does this by finding `k` central points, called **centroids**, and assigning each data point to the nearest centroid. The core idea is an iterative process, a sort of "dance" between assigning points and updating the centers:
 
 1.  **Initialization - Pick Starting Points (`_initialize_centroids`):**
