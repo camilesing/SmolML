@@ -2,6 +2,10 @@
 
 **A pure Python machine learning library built entirely from the ground up for educational purposes. Made to understand how ML really works!**
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/c00b89e9-58a3-44d8-b9c3-4b47052eb150" width="600" alt="FlyLLM Logo">
+</div>
+
 ---
 
 ## What is SmolML? 🤔
@@ -85,11 +89,18 @@ cd SmolML
 # Explore the code in the smolml/ directory!
 ```
 
+You can also run the multiple tests in the `tests/` folder. Just install the `requirements.txt` (this is for comparing SmolML against another standard libraries like TensorFlow, sklearn, etc, and generate plots with matplotlib).
+
+```bash
+cd tests
+pip install -r requirements
+```
+
 ## Contributing
 
 Contributions are always welcome! If you're interested in contributing to SmolML, please fork the repository and create a new branch for your changes. When you're done with your changes, submit a pull request to merge your changes into the main branch.
 
-## Supporting Escordia
+## Supporting SmolML
 
 If you want to support SmolML, you can:
 - **Star** :star: the project in Github!
