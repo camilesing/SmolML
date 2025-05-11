@@ -17,6 +17,10 @@ Imagine you're trying to decide if you should play tennis today. You might ask:
 
 That's the essence of a **Decision Tree**! It's a structure that recursively splits the data based on simple questions about the input features.
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/0b805169-fa57-4097-80e0-e841ea3246af" width="600">
+</div>
+
 **How it's Built (The `fit` method):**
 
 The magic happens in the `fit` method of the `DecisionTree` class (see `decision_tree.py`). It builds the tree structure, represented by interconnected `DecisionNode` objects, using a process called **recursive partitioning**:
@@ -50,6 +54,11 @@ Once the tree is built, predicting is straightforward! For a new data point:
 Cool, right? A single tree is intuitive, but sometimes they can be a bit unstable and prone to overfitting. What if we could combine *many* trees?
 
 ## Random Forests: The Wisdom of Many Trees
+
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/6a652774-4fc3-4ed1-89d4-e9eaf1410e2a" width="600">
+</div>
 
 A single Decision Tree can be sensitive to the specific data it's trained on. A slightly different dataset might produce a very different tree structure. **Random Forests** tackle this by building an *ensemble* (a "forest") of many Decision Trees and combining their predictions. It's like asking many different experts (trees) and going with the consensus!
 
