@@ -1,6 +1,4 @@
 from smolml.core.ml_array import MLArray
-import numpy as np
-from sklearn.preprocessing import StandardScaler as SKStandardScaler
 from smolml.core.value import Value
 
 """
