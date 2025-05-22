@@ -96,7 +96,7 @@ What if the relationship isn't a straight line? Polynomial Regression extends li
 Here's a conceptual example of how you might use `LinearRegression`:
 
 ```python
-from smolml.regression import LinearRegression
+from smolml.models.regression import LinearRegression
 from smolml.core.ml_array import MLArray
 import smolml.utils.optimizers as optimizers
 import smolml.utils.losses as losses
