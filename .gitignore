@@ -4,3 +4,4 @@ venv
 SmolML.egg-info
 build
 .venv
+.idea
